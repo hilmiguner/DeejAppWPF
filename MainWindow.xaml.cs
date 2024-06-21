@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,6 +17,7 @@ using System.Windows.Shapes;
 using NAudio.CoreAudioApi;
 using DeejAppWPF.Scripts;
 using System.IO.Ports;
+using System;
 
 namespace DeejAppWPF
 {
@@ -34,75 +36,23 @@ namespace DeejAppWPF
 
         private SerialPort serialPort;
 
+        private PresetManager presetManager;
+
         public MainWindow()
         {
             InitializeComponent();
             InitializeNotifyIcon();
 
             nAudioManager = new NAudioManagement();
+            presetManager = new PresetManager();
 
-            InitializeMasterVolumeSystem();
             InitializeImages();
             InitializeComboBoxes();
-            InitializeSliders();
             InitializeSessions();
             InitializeMicrophones();
-
             InitializeSerialCommunication();
-        }
 
-        public void InitializeSerialCommunication()
-        {
-            string arduinoPort;
-            
-            string FindArduinoPort()
-            {
-                string[] ports = SerialPort.GetPortNames();
-                foreach (string port in ports)
-                {
-                    try
-                    {
-                        using (SerialPort serialPort = new SerialPort(port, 9600))
-                        {
-                            serialPort.ReadTimeout = 2000;
-
-                            if (serialPort.IsOpen)
-                            {
-                                serialPort.Close();
-                            }
-
-                            serialPort.Open();
-
-                            string response = serialPort.ReadTo("\n");
-                            Debug.Print(response);
-                            if (response.Split("|")[0] == "DeejApp")
-                            {
-                                return port;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine("Hata: " + ex.Message);
-                        continue;
-                    }
-                }
-                return null;
-            }
-            
-            arduinoPort = FindArduinoPort();
-            if (arduinoPort != null)
-            {
-                Debug.Print("ARDUINO BULUNDU. " + arduinoPort);
-                serialPort = new SerialPort(arduinoPort, 9600);
-                serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
-                serialPort.Open();
-            }
-            else
-            {
-                Debug.Print("ARDUINO BULUNAMADI.");
-            }
-            
+            SetCurrentPreset("presetOne");
         }
 
         private float Normalize(float value)
@@ -112,14 +62,18 @@ namespace DeejAppWPF
 
         private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
-            string data = serialPort.ReadLine();
-            string[] dataList = data.Split("|");
-            float[] pins = new float[4];
-            pins[0] = Normalize(float.Parse(dataList[1]));
-            pins[1] = Normalize(float.Parse(dataList[2]));
-            pins[2] = Normalize(float.Parse(dataList[3]));
-            pins[3] = Normalize(float.Parse(dataList[4]));
-            UpdateValues(pins);
+            try
+            {
+                string data = serialPort.ReadLine();
+                string[] dataList = data.Split("|");
+                float[] pins = new float[4];
+                pins[0] = Normalize(float.Parse(dataList[1]));
+                pins[1] = Normalize(float.Parse(dataList[2]));
+                pins[2] = Normalize(float.Parse(dataList[3]));
+                pins[3] = Normalize(float.Parse(dataList[4]));
+                UpdateValues(pins);
+            }
+            catch (Exception ex) { }
         }
 
         private void UpdateValues(float[] pins)
@@ -150,6 +104,7 @@ namespace DeejAppWPF
             // Mute check END
 
             nAudioManager.audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar = newValue;
+            progressBar_MasterAudio.Value = (int)(newValue * 100);
             run_masterVolumeLevel.Text = ((int)(newValue*100)).ToString();
         }
 
@@ -170,8 +125,9 @@ namespace DeejAppWPF
                 // Mute check END
 
                 microphoneItem.device.AudioEndpointVolume.MasterVolumeLevelScalar = newValue;
-                run_microphoneLevel.Text = ((int)(newValue * 100)).ToString();
             }
+            progressBar_microphone.Value = (int)(newValue * 100);
+            run_microphoneLevel.Text = ((int)(newValue * 100)).ToString();
         }
 
         private void UpdateSessionOne(float newValue)
@@ -207,9 +163,10 @@ namespace DeejAppWPF
                     {
                         session.controller.SimpleAudioVolume.Volume = newValue;
                     }
-                    run_sessionOne.Text = ((int)(newValue * 100)).ToString();
                 }
             }
+            progressBar_sessionOne.Value = (int)(newValue * 100);
+            run_sessionOne.Text = ((int)(newValue * 100)).ToString();
         }
 
         private void UpdateSessionTwo(float newValue)
@@ -245,9 +202,10 @@ namespace DeejAppWPF
                     {
                         session.controller.SimpleAudioVolume.Volume = newValue;
                     }
-                    run_sessionTwo.Text = ((int)(newValue * 100)).ToString();
                 }
             }
+            progressBar_sessionTwo.Value = (int)(newValue * 100);
+            run_sessionTwo.Text = ((int)(newValue * 100)).ToString();
         }
 
         public void InitializeNotifyIcon()
@@ -273,12 +231,6 @@ namespace DeejAppWPF
             System.Windows.Application.Current.Shutdown();
         }
 
-        private void InitializeMasterVolumeSystem()
-        {
-            slider_masterVolume.Value = (int)(nAudioManager.audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar * 100);
-            run_masterVolumeLevel.Text = slider_masterVolume.Value.ToString();
-        }
-
         private void InitializeImages()
         {
             images[0] = image_sessionOne;
@@ -291,12 +243,6 @@ namespace DeejAppWPF
             comboBoxes[1] = comboBox_sessionTwo;
         }
 
-        private void InitializeSliders()
-        {
-            sliders[0] = slider_sessionOne;
-            sliders[1] = slider_sessionTwo;
-        }
-
         private void InitializeSessions()
         {
             nAudioManager.FetchSessions();
@@ -305,7 +251,6 @@ namespace DeejAppWPF
                 Dictionary<String, List<SessionItem>> sessionList = nAudioManager.GetSessions();
                 comboBox.ItemsSource = sessionList;
                 comboBox.DisplayMemberPath = "Key";
-                //comboBox.SelectedValuePath = "Value";
             }
         }
 
@@ -317,191 +262,106 @@ namespace DeejAppWPF
             comboBox_microphones.DisplayMemberPath = "name";
         }
 
-        private void slider_masterVolume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        public void InitializeSerialCommunication()
         {
-            double volume = slider_masterVolume.Value / 100.0d;
+            string arduinoPort;
 
-            // Mute check BEGIN
-            if (volume == 0.0d)
+            string FindArduinoPort()
             {
-                nAudioManager.audioDevice.AudioEndpointVolume.Mute = true;
+                string[] ports = SerialPort.GetPortNames();
+                foreach (string port in ports)
+                {
+                    try
+                    {
+                        using (SerialPort serialPort = new SerialPort(port, 19200))
+                        {
+                            serialPort.ReadTimeout = 2000;
+
+                            if (serialPort.IsOpen)
+                            {
+                                serialPort.Close();
+                            }
+
+                            serialPort.Open();
+
+                            Thread.Sleep(2000);
+
+                            string response;
+                            //string response = serialPort.ReadTo("\n");
+                            for (int i = 0; i < 3; i++)
+                            {
+                                response = serialPort.ReadLine();
+                                Debug.Print("Gelen yanıt: " + response);
+                                if (response.Contains("|") && response.Split("|")[0] == "DeejApp")
+                                {
+                                    return port;
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Hata: " + ex.Message);
+                        continue;
+                    }
+                }
+                return null;
+            }
+
+            arduinoPort = FindArduinoPort();
+            if (arduinoPort != null)
+            {
+                Debug.Print("ARDUINO BULUNDU. " + arduinoPort);
+                serialPort = new SerialPort(arduinoPort, 19200);
+                serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
+                serialPort.Open();
             }
             else
             {
-                if (nAudioManager.audioDevice.AudioEndpointVolume.Mute == true) nAudioManager.audioDevice.AudioEndpointVolume.Mute = false;
+                Debug.Print("ARDUINO BULUNAMADI.");
             }
-            // Mute check END
 
-            nAudioManager.audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar = (float)volume;
-            run_masterVolumeLevel.Text = ((int)slider_masterVolume.Value).ToString();
         }
 
-        private void updateSlidersByName(int parentIndex, String name)
+        public void SetCurrentPreset(string presetName)
         {
-            for (int i = 0; i < 2; i++)
+            presetManager.FetchPreset(presetName);
+            Dictionary<String, String> presets = presetManager.GetPreset();
+
+            if (presets["microphone"] != "")
             {
-                var currentItem = comboBoxes[i].SelectedItem;
-                if (currentItem != null) 
+                foreach (MicrophoneItem session in comboBox_microphones.ItemsSource)
                 {
-                    if (((KeyValuePair<string, List<SessionItem>>)currentItem).Key == name && i != parentIndex)
-                    {
-                        sliders[i].Value = (int)(((KeyValuePair<string, List<SessionItem>>)currentItem).Value[0].controller.SimpleAudioVolume.Volume * 100.0f);
+                    if (session.name.ToLower() == presets["microphone"].ToLower()) 
+                    { 
+                        comboBox_microphones.SelectedItem = session;
+                        break;
                     }
                 }
             }
-        }
 
-        private void updateLabels()
-        {
-            run_sessionOne.Text = ((int)slider_sessionOne.Value).ToString();
-            run_sessionTwo.Text = ((int)slider_sessionTwo.Value).ToString();
-        }
-
-        private void comboBox_sessionOne_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var currentItem = comboBox_sessionOne.SelectedItem;
-            if (currentItem != null)
+            if (presets["sessionOne"] != "")
             {
-                KeyValuePair<string, List<SessionItem>> kvp = (KeyValuePair<string, List<SessionItem>>)currentItem;
-
-                List<SessionItem> currentItemList = kvp.Value;
-
-                string currentSessionName = currentItemList[0].name;
-                nAudioManager.currentSessions[currentSessionName] = currentItemList;
-                image_sessionOne.Source = IconToBitmapImage(nAudioManager.currentSessions[currentSessionName][0].icon);
-                slider_sessionOne.Value = (int)(this.nAudioManager.currentSessions[currentSessionName][0].controller.SimpleAudioVolume.Volume * 100);
-                run_sessionOne.Text = slider_sessionOne.Value.ToString();
-            }
-        }
-
-        private void slider_sessionOne_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            var currentItem = comboBox_sessionOne.SelectedItem;
-            if(currentItem != null)
-            {
-                KeyValuePair<string, List<SessionItem>> kvp = (KeyValuePair<string, List<SessionItem>>)currentItem;
-
-                List<SessionItem> currentSessionList = kvp.Value;
-                if (currentSessionList != null)
+                foreach (KeyValuePair<String, List<SessionItem>> kvp in comboBox_sessionOne.ItemsSource)
                 {
-                    string currentSessionName = currentSessionList[0].name;
-                    double volume = slider_sessionOne.Value / 100.0d;
-                    run_sessionOne.Text = ((int)slider_sessionOne.Value).ToString();
-
-                    // Mute check BEGIN
-                    if (volume == 0.0f)
+                    if (kvp.Key.ToLower() == presets["sessionOne"].ToLower())
                     {
-                        foreach (SessionItem session in currentSessionList)
-                        {
-                            session.controller.SimpleAudioVolume.Mute = true;
-                        }
+                        comboBox_sessionOne.SelectedItem = kvp;
+                        break;
                     }
-                    else
-                    {
-                        foreach (SessionItem session in currentSessionList)
-                        {
-                            if (session.controller.SimpleAudioVolume.Mute == true) session.controller.SimpleAudioVolume.Mute = false;
-                        }
-                    }
-                    // Mute check END
-
-                    foreach (SessionItem session in currentSessionList)
-                    {
-                        session.controller.SimpleAudioVolume.Volume = (float)volume;
-                    }
-                    updateSlidersByName(0, nAudioManager.currentSessions[currentSessionName][0].name);
-                    updateLabels();
-                }
-            }  
-        }
-
-        private void comboBox_sessionTwo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var currentItem = comboBox_sessionTwo.SelectedItem;
-            if (currentItem != null)
-            {
-                KeyValuePair<string, List<SessionItem>> kvp = (KeyValuePair<string, List<SessionItem>>)currentItem;
-
-                List<SessionItem> currentItemList = kvp.Value;
-
-                string currentSessionName = currentItemList[0].name;
-                nAudioManager.currentSessions[currentSessionName] = currentItemList;
-                image_sessionTwo.Source = IconToBitmapImage(nAudioManager.currentSessions[currentSessionName][0].icon);
-                slider_sessionTwo.Value = (int)(this.nAudioManager.currentSessions[currentSessionName][0].controller.SimpleAudioVolume.Volume * 100);
-                run_sessionTwo.Text = slider_sessionTwo.Value.ToString();
-            }
-        }
-
-        private void slider_sessionTwo_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            var currentItem = comboBox_sessionTwo.SelectedItem;
-            if(currentItem != null)
-            {
-                KeyValuePair<string, List<SessionItem>> kvp = (KeyValuePair<string, List<SessionItem>>)currentItem;
-
-                List<SessionItem> currentSessionList = kvp.Value;
-                if (currentSessionList != null)
-                {
-                    string currentSessionName = currentSessionList[0].name;
-                    double volume = slider_sessionTwo.Value / 100.0d;
-                    run_sessionTwo.Text = ((int)slider_sessionTwo.Value).ToString();
-
-                    // Mute check BEGIN
-                    if (volume == 0.0f)
-                    {
-                        foreach (SessionItem session in currentSessionList)
-                        {
-                            session.controller.SimpleAudioVolume.Mute = true;
-                        }
-                    }
-                    else
-                    {
-                        foreach (SessionItem session in currentSessionList)
-                        {
-                            if (session.controller.SimpleAudioVolume.Mute == true) session.controller.SimpleAudioVolume.Mute = false;
-                        }
-                    }
-                    // Mute check END
-
-                    foreach (SessionItem session in currentSessionList)
-                    {
-                        session.controller.SimpleAudioVolume.Volume = (float)volume;
-                    }
-                    updateSlidersByName(1, nAudioManager.currentSessions[currentSessionName][0].name);
-                    updateLabels();
                 }
             }
-        }
 
-        private void comboBox_microphones_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (comboBox_microphones.SelectedItem != null)
+            if (presets["sessionTwo"] != "")
             {
-                slider_microphone.Value = (int)((comboBox_microphones.SelectedItem as MicrophoneItem).device.AudioEndpointVolume.MasterVolumeLevelScalar * 100);
-                run_microphoneLevel.Text = slider_microphone.Value.ToString();
-            }
-        }
-
-        private void slider_microphone_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            MicrophoneItem microphoneItem = comboBox_microphones.SelectedItem as MicrophoneItem;
-            if (microphoneItem != null)
-            {
-                double newValue = slider_microphone.Value / 100.0d;
-
-                // Mute check BEGIN
-                if (newValue == 0.0f)
+                foreach (KeyValuePair<String, List<SessionItem>> kvp in comboBox_sessionTwo.ItemsSource)
                 {
-                    microphoneItem.device.AudioEndpointVolume.Mute = true;
+                    if (kvp.Key.ToLower() == presets["sessionTwo"].ToLower())
+                    {
+                        comboBox_sessionTwo.SelectedItem = kvp;
+                        break;
+                    }
                 }
-                else
-                {
-                    if (microphoneItem.device.AudioEndpointVolume.Mute == true) microphoneItem.device.AudioEndpointVolume.Mute = false;
-                }
-                // Mute check END
-
-                microphoneItem.device.AudioEndpointVolume.MasterVolumeLevelScalar = (float)newValue;
-                run_microphoneLevel.Text = ((int)slider_microphone.Value).ToString();
             }
         }
 
@@ -526,58 +386,80 @@ namespace DeejAppWPF
                 }
             }
         }
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             e.Cancel = true;
             this.Hide();
         }
 
-        private void button_refresh_Click(object sender, RoutedEventArgs e)
+        private void comboBox_microphones_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            nAudioManager.InitializeDevices();
-
-            string[] oldSessionNames = new string[2];
-            int index = 0;
-            foreach (var kvp in nAudioManager.currentSessions)
+            var currentItem = comboBox_microphones.SelectedItem;
+            if (currentItem != null)
             {
-                if (kvp.Value == null) oldSessionNames[index] = null;
-                else
-                {
-                    oldSessionNames[index] = kvp.Value[0].name;
-                }
-                index++;
-            }
-            InitializeSessions();
-            for (int i = 0; i < oldSessionNames.Length; i++)
-            {
-                string sessionName = oldSessionNames[i];
-                bool didFind = false;
-                index = 0;
-                foreach (var kvp in nAudioManager.allSessions)
-                {
-                    if (kvp.Value[0].name == sessionName)
-                    {
-                        comboBoxes[i].SelectedIndex = index;
-                        didFind = true;
-                        break;
-                    }
-                    index++;
-                }
-                if (didFind == false) images[i].Source = null;
-            }
-
-            string oldDeviceID = comboBox_microphones.SelectedItem != null ? (comboBox_microphones.SelectedItem as MicrophoneItem).deviceID : "null";
-            InitializeMicrophones();
-            index = 0;
-            foreach (MicrophoneItem microphone in nAudioManager.allMicrophones)
-            { 
-                if (microphone.deviceID == oldDeviceID) 
-                { 
-                    comboBox_microphones.SelectedIndex = index;
-                    break;
-                }
-                index++;
+                presetManager.SetPreset(GetComboBoxStrings());
             }
         }
+
+        private void comboBox_sessionOne_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var currentItem = comboBox_sessionOne.SelectedItem;
+            if (currentItem != null)
+            {
+                KeyValuePair<string, List<SessionItem>> kvp = (KeyValuePair<string, List<SessionItem>>)currentItem;
+
+                List<SessionItem> currentItemList = kvp.Value;
+
+                string currentSessionName = currentItemList[0].name;
+                nAudioManager.currentSessions[currentSessionName] = currentItemList;
+                image_sessionOne.Source = IconToBitmapImage(nAudioManager.currentSessions[currentSessionName][0].icon);;
+
+                presetManager.SetPreset(GetComboBoxStrings());
+            }
+        }
+
+        private void comboBox_sessionTwo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var currentItem = comboBox_sessionTwo.SelectedItem;
+            if (currentItem != null)
+            {
+                KeyValuePair<string, List<SessionItem>> kvp = (KeyValuePair<string, List<SessionItem>>)currentItem;
+
+                List<SessionItem> currentItemList = kvp.Value;
+
+                string currentSessionName = currentItemList[0].name;
+                nAudioManager.currentSessions[currentSessionName] = currentItemList;
+                image_sessionTwo.Source = IconToBitmapImage(nAudioManager.currentSessions[currentSessionName][0].icon);
+
+                presetManager.SetPreset(GetComboBoxStrings());
+            }
+        }
+    
+        private String[] GetComboBoxStrings()
+        {
+            String[] strings = new String[4];
+
+            strings[0] = "presetOne";
+
+            for (int i = 1; i < strings.Length; i++)
+            {
+                strings[i] = "";
+            }
+
+            MicrophoneItem currentMicrophone = comboBox_microphones.SelectedItem as MicrophoneItem;
+            // Debug.Print("KONTROL 0: " + (currentMicrophone != null).ToString());
+            if (currentMicrophone != null) strings[1] = currentMicrophone.name;
+
+            var currentSessionOne = comboBox_sessionOne.SelectedItem;
+            // Debug.Print("KONTROL 1: " + (currentSessionOne != null).ToString());
+            if (currentSessionOne != null) strings[2] = ((KeyValuePair<string, List<SessionItem>>)currentSessionOne).Key;
+
+            var currentSessionTwo = comboBox_sessionTwo.SelectedItem;
+            // Debug.Print("KONTROL 2: " + (currentSessionTwo != null).ToString());
+            if (currentSessionTwo != null) strings[3] = ((KeyValuePair<string, List<SessionItem>>)currentSessionTwo).Key;
+
+            return strings;
+        }  
     }
 }

@@ -9,7 +9,6 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -30,7 +29,7 @@
                 <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" Margin="0,10">
                     Audio Volume: <Run x:Name="run_masterVolumeLevel">100</Run>
                 </TextBlock>
-                <Slider x:Name="slider_masterVolume" Grid.Column="0" Grid.Row="3" ValueChanged="slider_masterVolume_ValueChanged" Maximum="100"/>
+                <ProgressBar x:Name="progressBar_MasterAudio" Grid.Column="0" Grid.Row="3" Height="15" Minimum="0" Maximum="100"/>
             </Grid>
             <Grid Margin="10,10,10,10" Grid.Column="1" Grid.Row="0">
                 <Grid.ColumnDefinitions>
@@ -49,7 +48,7 @@
                     Microphone Level: <Run x:Name="run_microphoneLevel">100</Run>
                 </TextBlock>
                 <ComboBox x:Name="comboBox_microphones" Grid.Column="0" Grid.Row="3" SelectionChanged="comboBox_microphones_SelectionChanged"/>
-                <Slider x:Name="slider_microphone" Grid.Column="0" Grid.Row="4" Margin="0,10" ValueChanged="slider_microphone_ValueChanged" Maximum="100"/>
+                <ProgressBar x:Name="progressBar_microphone" Grid.Column="0" Grid.Row="4" Margin="0,10" Height="15" Minimum="0" Maximum="100"/>
             </Grid>
             <Grid Margin="10,10,10,10" Grid.Column="2" Grid.Row="0">
                 <Grid.ColumnDefinitions>
@@ -68,7 +67,7 @@
                     Audio Volume: <Run x:Name="run_sessionOne">100</Run>
                 </TextBlock>
                 <ComboBox x:Name="comboBox_sessionOne" Grid.Column="0" Grid.Row="3" SelectionChanged="comboBox_sessionOne_SelectionChanged"/>
-                <Slider x:Name="slider_sessionOne" Grid.Column="0" Grid.Row="4" Margin="0,10" ValueChanged="slider_sessionOne_ValueChanged" Maximum="100"/>
+                <ProgressBar x:Name="progressBar_sessionOne" Grid.Column="0" Grid.Row="4" Margin="0,10" Height="15" Minimum="0" Maximum="100"/>
             </Grid>
             <Grid Margin="10,10,10,10" Grid.Column="3" Grid.Row="0">
                 <Grid.ColumnDefinitions>
@@ -87,17 +86,8 @@
                     Audio Volume: <Run x:Name="run_sessionTwo">100</Run>
                 </TextBlock>
                 <ComboBox x:Name="comboBox_sessionTwo" Grid.Column="0" Grid.Row="3" SelectionChanged="comboBox_sessionTwo_SelectionChanged"/>
-                <Slider x:Name="slider_sessionTwo" Grid.Column="0" Grid.Row="4" Margin="0,10" ValueChanged="slider_sessionTwo_ValueChanged" Maximum="100"/>
+                <ProgressBar x:Name="progressBar_sessionTwo" Grid.Column="0" Grid.Row="4" Margin="0,10" Height="15" Minimum="0" Maximum="100"/>
             </Grid>
         </UniformGrid>
-        <Grid Margin="10,10,10,10" Grid.Column="0" Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Button x:Name="button_refresh" Content="Refresh" Grid.Column="0" Grid.Row="0" Click="button_refresh_Click"/>
-        </Grid>
     </Grid>
 </Window>

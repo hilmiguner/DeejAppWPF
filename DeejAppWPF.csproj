@@ -12,10 +12,12 @@
     <None Remove="assets\image\deejApp.ico" />
     <None Remove="assets\image\master_volume.png" />
     <None Remove="assets\image\microphone.png" />
+    <None Remove="presets.json" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
   </ItemGroup>
 
@@ -23,6 +25,11 @@
     <Resource Include="assets\image\deejApp.ico" />
     <Resource Include="assets\image\master_volume.png" />
     <Resource Include="assets\image\microphone.png" />
+    <Content Include="presets.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>
