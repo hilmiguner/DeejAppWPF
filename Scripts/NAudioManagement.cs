@@ -15,7 +15,7 @@ namespace DeejAppWPF.Scripts
         public MMDevice audioDevice;
         private MMDevice recordingDevice;
 
-        public Dictionary<String, List<SessionItem>> currentSessions = new Dictionary<String, List<SessionItem>>();
+        public KeyValuePair<String, List<SessionItem>>[] currentSessions = new KeyValuePair<String, List<SessionItem>>[2];
 
         public Dictionary<String, List<SessionItem>> allSessions;
         public List<MicrophoneItem> allMicrophones;

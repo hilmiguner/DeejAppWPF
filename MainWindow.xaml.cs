@@ -60,22 +60,6 @@ namespace DeejAppWPF
             return (value / 1023);
         }
 
-        private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
-        {
-            try
-            {
-                string data = serialPort.ReadLine();
-                string[] dataList = data.Split("|");
-                float[] pins = new float[4];
-                pins[0] = Normalize(float.Parse(dataList[1]));
-                pins[1] = Normalize(float.Parse(dataList[2]));
-                pins[2] = Normalize(float.Parse(dataList[3]));
-                pins[3] = Normalize(float.Parse(dataList[4]));
-                UpdateValues(pins);
-            }
-            catch (Exception ex) { }
-        }
-
         private void UpdateValues(float[] pins)
         {
             this.Dispatcher.Invoke(() =>
@@ -264,8 +248,6 @@ namespace DeejAppWPF
 
         public void InitializeSerialCommunication()
         {
-            string arduinoPort;
-
             string FindArduinoPort()
             {
                 string[] ports = SerialPort.GetPortNames();
@@ -307,8 +289,9 @@ namespace DeejAppWPF
                 }
                 return null;
             }
+            
+            string arduinoPort = FindArduinoPort();
 
-            arduinoPort = FindArduinoPort();
             if (arduinoPort != null)
             {
                 Debug.Print("ARDUINO BULUNDU. " + arduinoPort);
@@ -321,6 +304,22 @@ namespace DeejAppWPF
                 Debug.Print("ARDUINO BULUNAMADI.");
             }
 
+        }
+
+        private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                string data = serialPort.ReadLine();
+                string[] dataList = data.Split("|");
+                float[] pins = new float[4];
+                pins[0] = Normalize(float.Parse(dataList[1]));
+                pins[1] = Normalize(float.Parse(dataList[2]));
+                pins[2] = Normalize(float.Parse(dataList[3]));
+                pins[3] = Normalize(float.Parse(dataList[4]));
+                UpdateValues(pins);
+            }
+            catch (Exception ex) { }
         }
 
         public void SetCurrentPreset(string presetName)
@@ -404,18 +403,37 @@ namespace DeejAppWPF
 
         private void comboBox_sessionOne_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            Debug.Print("GİRDİ");
             var currentItem = comboBox_sessionOne.SelectedItem;
             if (currentItem != null)
             {
                 KeyValuePair<string, List<SessionItem>> kvp = (KeyValuePair<string, List<SessionItem>>)currentItem;
 
-                List<SessionItem> currentItemList = kvp.Value;
+                bool didFind = false;
 
-                string currentSessionName = currentItemList[0].name;
-                nAudioManager.currentSessions[currentSessionName] = currentItemList;
-                image_sessionOne.Source = IconToBitmapImage(nAudioManager.currentSessions[currentSessionName][0].icon);;
+                for (int i = 0; i < nAudioManager.currentSessions.Length; i++)
+                {
+                    if (i != 0 && nAudioManager.currentSessions[i].Key == kvp.Key)
+                    {
+                        didFind = true;
+                        break;
+                    }
+                }
 
-                presetManager.SetPreset(GetComboBoxStrings());
+                if (!didFind)
+                {
+                    List<SessionItem> currentItemList = kvp.Value;
+
+                    string currentSessionName = currentItemList[0].name;
+                    nAudioManager.currentSessions[0] = new KeyValuePair<String, List<SessionItem>>(kvp.Key, currentItemList) ;
+                    image_sessionOne.Source = IconToBitmapImage(nAudioManager.currentSessions[0].Value[0].icon); ;
+
+                    presetManager.SetPreset(GetComboBoxStrings());
+                }
+                else
+                {
+                    comboBox_sessionOne.SelectedItem = nAudioManager.currentSessions[0];
+                }
             }
         }
 
@@ -426,13 +444,31 @@ namespace DeejAppWPF
             {
                 KeyValuePair<string, List<SessionItem>> kvp = (KeyValuePair<string, List<SessionItem>>)currentItem;
 
-                List<SessionItem> currentItemList = kvp.Value;
+                bool didFind = false;
 
-                string currentSessionName = currentItemList[0].name;
-                nAudioManager.currentSessions[currentSessionName] = currentItemList;
-                image_sessionTwo.Source = IconToBitmapImage(nAudioManager.currentSessions[currentSessionName][0].icon);
+                for (int i = 0; i < nAudioManager.currentSessions.Length; i++)
+                {
+                    if (i != 1 && nAudioManager.currentSessions[i].Key == kvp.Key)
+                    {
+                        didFind = true;
+                        break;
+                    }
+                }
 
-                presetManager.SetPreset(GetComboBoxStrings());
+                if (!didFind)
+                {
+                    List<SessionItem> currentItemList = kvp.Value;
+
+                    string currentSessionName = currentItemList[0].name;
+                    nAudioManager.currentSessions[1] = new KeyValuePair<String, List<SessionItem>>(kvp.Key, currentItemList);
+                    image_sessionTwo.Source = IconToBitmapImage(nAudioManager.currentSessions[1].Value[0].icon); ;
+
+                    presetManager.SetPreset(GetComboBoxStrings());
+                }
+                else
+                {
+                    comboBox_sessionTwo.SelectedItem = nAudioManager.currentSessions[1];
+                }
             }
         }
     

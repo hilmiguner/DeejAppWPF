@@ -13,7 +13,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <UniformGrid Columns="4" Rows="1" Margin="10,10,10,10" Grid.Column="0" Grid.Row="0">
+        <UniformGrid Columns="4"  Rows="1" Margin="10,10,10,10" Grid.Column="0" Grid.Row="0">
             <Grid Margin="10,10,10,10" Grid.Column="0" Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
