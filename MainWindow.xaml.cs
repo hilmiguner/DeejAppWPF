@@ -57,21 +57,26 @@ namespace DeejAppWPF
 
         private float Normalize(float value)
         {
-            return (value / 1023);
+            float newValue = (value / 1021);
+            return newValue > 1 ? 1 : newValue ;
         }
 
         private void UpdateValues(float[] pins)
         {
-            this.Dispatcher.Invoke(() =>
+            try
             {
-                UpdateMasterLevel(pins[0]);
+                this.Dispatcher.Invoke(() =>
+                {
+                    UpdateMasterLevel(pins[0]);
 
-                UpdateMicrophoneLevel(pins[1]);
+                    UpdateMicrophoneLevel(pins[1]);
 
-                UpdateSessionOne(pins[2]);
+                    UpdateSessionOne(pins[2]);
 
-                UpdateSessionTwo(pins[3]);
-            });
+                    UpdateSessionTwo(pins[3]);
+                });
+            }
+            catch (Exception ex) { }
         }
 
         private void UpdateMasterLevel(float newValue)
