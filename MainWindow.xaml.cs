@@ -334,12 +334,12 @@ namespace DeejAppWPF
                 pins[1] = Normalize(float.Parse(dataList[2]));
                 pins[2] = Normalize(float.Parse(dataList[3]));
                 pins[3] = Normalize(float.Parse(dataList[4]));
-                int tempCount = 0;
+/*                int tempCount = 0;
                 foreach (var item in pins)
                 {
                     tempCount++;
                     Debug.Print(tempCount.ToString() + ". pin değeri: " + item.ToString());
-                }
+                }*/
                 UpdateValues(pins);
             }
             catch (Exception ex) { }
@@ -463,7 +463,8 @@ namespace DeejAppWPF
                 }
                 else
                 {
-                    comboBox_sessionOne.SelectedItem = nAudioManager.currentSessions[0];
+                    if (nAudioManager.currentSessions[0].Key == null) comboBox_sessionOne.SelectedItem = null;
+                    else comboBox_sessionOne.SelectedItem = nAudioManager.currentSessions[0];
                 }
             }
         }
@@ -498,7 +499,8 @@ namespace DeejAppWPF
                 }
                 else
                 {
-                    comboBox_sessionTwo.SelectedItem = nAudioManager.currentSessions[1];
+                    if (nAudioManager.currentSessions[1].Key == null) comboBox_sessionTwo.SelectedItem = null;
+                    else comboBox_sessionTwo.SelectedItem = nAudioManager.currentSessions[1];
                 }
             }
         }
