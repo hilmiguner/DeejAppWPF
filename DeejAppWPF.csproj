@@ -25,9 +25,12 @@
     <Resource Include="assets\image\deejApp.ico" />
     <Resource Include="assets\image\master_volume.png" />
     <Resource Include="assets\image\microphone.png" />
-    <Content Include="presets.json">
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="assets\presets.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>

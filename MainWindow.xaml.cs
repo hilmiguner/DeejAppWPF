@@ -18,13 +18,15 @@ using NAudio.CoreAudioApi;
 using DeejAppWPF.Scripts;
 using System.IO.Ports;
 using System;
+using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace DeejAppWPF
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : System.Windows.Window
     {
         private NotifyIcon notifyIcon;
 
@@ -43,7 +45,7 @@ namespace DeejAppWPF
             InitializeComponent();
             InitializeNotifyIcon();
 
-            nAudioManager = new NAudioManagement();
+            nAudioManager = new NAudioManagement(this);
             presetManager = new PresetManager();
 
             InitializeImages();
@@ -58,7 +60,7 @@ namespace DeejAppWPF
         private float Normalize(float value)
         {
             float newValue = (value / 1021);
-            return newValue > 1 ? 1 : newValue ;
+            return newValue > 1 ? 1 : newValue;
         }
 
         private void UpdateValues(float[] pins)
@@ -94,7 +96,7 @@ namespace DeejAppWPF
 
             nAudioManager.audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar = newValue;
             progressBar_MasterAudio.Value = (int)(newValue * 100);
-            run_masterVolumeLevel.Text = ((int)(newValue*100)).ToString();
+            run_masterVolumeLevel.Text = ((int)(newValue * 100)).ToString();
         }
 
         private void UpdateMicrophoneLevel(float newValue)
@@ -232,14 +234,17 @@ namespace DeejAppWPF
             comboBoxes[1] = comboBox_sessionTwo;
         }
 
-        private void InitializeSessions()
+        public void InitializeSessions()
         {
             nAudioManager.FetchSessions();
             foreach (System.Windows.Controls.ComboBox comboBox in comboBoxes)
             {
                 Dictionary<String, List<SessionItem>> sessionList = nAudioManager.GetSessions();
-                comboBox.ItemsSource = sessionList;
-                comboBox.DisplayMemberPath = "Key";
+                this.Dispatcher.Invoke(() =>
+                {
+                    comboBox.ItemsSource = sessionList;
+                    comboBox.DisplayMemberPath = "Key";
+                });
             }
         }
 
@@ -281,9 +286,11 @@ namespace DeejAppWPF
                                 Debug.Print("Gelen yanıt: " + response);
                                 if (response.Contains("|") && response.Split("|")[0] == "DeejApp")
                                 {
+                                    serialPort.Close();
                                     return port;
                                 }
                             }
+                            serialPort.Close();
                         }
                     }
                     catch (Exception ex)
@@ -294,21 +301,26 @@ namespace DeejAppWPF
                 }
                 return null;
             }
-            
+
             string arduinoPort = FindArduinoPort();
 
             if (arduinoPort != null)
             {
-                Debug.Print("ARDUINO BULUNDU. " + arduinoPort);
-                serialPort = new SerialPort(arduinoPort, 19200);
-                serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
-                serialPort.Open();
+                while (serialPort == null)
+                {
+                    Debug.Print("ARDUINO BULUNDU. " + arduinoPort);
+                    serialPort = new SerialPort(arduinoPort, 19200);
+                    serialPort.Open();
+                    Thread.Sleep(2000);
+                    serialPort.ReadLine();
+                    serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
+                    serialPort.ReadLine();
+                }
             }
             else
             {
                 Debug.Print("ARDUINO BULUNAMADI.");
             }
-
         }
 
         private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
@@ -322,6 +334,12 @@ namespace DeejAppWPF
                 pins[1] = Normalize(float.Parse(dataList[2]));
                 pins[2] = Normalize(float.Parse(dataList[3]));
                 pins[3] = Normalize(float.Parse(dataList[4]));
+                int tempCount = 0;
+                foreach (var item in pins)
+                {
+                    tempCount++;
+                    Debug.Print(tempCount.ToString() + ". pin değeri: " + item.ToString());
+                }
                 UpdateValues(pins);
             }
             catch (Exception ex) { }
@@ -337,8 +355,11 @@ namespace DeejAppWPF
                 foreach (MicrophoneItem session in comboBox_microphones.ItemsSource)
                 {
                     if (session.name.ToLower() == presets["microphone"].ToLower()) 
-                    { 
-                        comboBox_microphones.SelectedItem = session;
+                    {
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            comboBox_microphones.SelectedItem = session;
+                        });
                         break;
                     }
                 }
@@ -350,7 +371,10 @@ namespace DeejAppWPF
                 {
                     if (kvp.Key.ToLower() == presets["sessionOne"].ToLower())
                     {
-                        comboBox_sessionOne.SelectedItem = kvp;
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            comboBox_sessionOne.SelectedItem = kvp;
+                        });
                         break;
                     }
                 }
@@ -362,7 +386,10 @@ namespace DeejAppWPF
                 {
                     if (kvp.Key.ToLower() == presets["sessionTwo"].ToLower())
                     {
-                        comboBox_sessionTwo.SelectedItem = kvp;
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            comboBox_sessionTwo.SelectedItem = kvp;
+                        });
                         break;
                     }
                 }
@@ -408,7 +435,6 @@ namespace DeejAppWPF
 
         private void comboBox_sessionOne_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Debug.Print("GİRDİ");
             var currentItem = comboBox_sessionOne.SelectedItem;
             if (currentItem != null)
             {
