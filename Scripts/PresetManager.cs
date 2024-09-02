@@ -37,8 +37,7 @@ namespace DeejAppWPF.Scripts
 
         private String GetJsonString()
         {
-            string temp = File.ReadAllText("assets/presets.json");
-            return temp;
+            return File.ReadAllText("assets/presets.json");
         }
 
         public Dictionary<String, String> GetPreset()

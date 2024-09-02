@@ -40,6 +40,8 @@ namespace DeejAppWPF
 
         private PresetManager presetManager;
 
+        private SettingsManager settingsManager;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -47,6 +49,7 @@ namespace DeejAppWPF
 
             nAudioManager = new NAudioManagement(this);
             presetManager = new PresetManager();
+            settingsManager = new SettingsManager();
 
             InitializeImages();
             InitializeComboBoxes();
@@ -260,12 +263,60 @@ namespace DeejAppWPF
         {
             string FindArduinoPort()
             {
-                string[] ports = SerialPort.GetPortNames();
-                foreach (string port in ports)
+                string ScanPorts()
+                {
+                    string[] ports = SerialPort.GetPortNames();
+                    foreach (string port in ports)
+                    {
+                        try
+                        {
+                            using (SerialPort serialPort = new SerialPort(port, 19200))
+                            {
+                                serialPort.ReadTimeout = 2000;
+
+                                if (serialPort.IsOpen)
+                                {
+                                    serialPort.Close();
+                                }
+
+                                serialPort.Open();
+
+                                Thread.Sleep(2000);
+
+                                string response;
+                                //string response = serialPort.ReadTo("\n");
+                                for (int i = 0; i < 3; i++)
+                                {
+                                    response = serialPort.ReadLine();
+                                    Debug.Print("Gelen yanıt: " + response);
+                                    if (response.Contains("|") && response.Split("|")[0] == "DeejApp")
+                                    {
+                                        serialPort.Close();
+                                        settingsManager.SetSettings("serialPort", port);
+                                        return port;
+                                    }
+                                }
+                                serialPort.Close();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Hata: " + ex.Message);
+                            continue;
+                        }
+                    }
+                    return null;
+                }
+                
+                if (settingsManager.serialPort == "none")
+                {
+                    return ScanPorts();
+                }
+                else 
                 {
                     try
                     {
-                        using (SerialPort serialPort = new SerialPort(port, 19200))
+                        using (SerialPort serialPort = new SerialPort(settingsManager.serialPort, 19200))
                         {
                             serialPort.ReadTimeout = 2000;
 
@@ -287,19 +338,20 @@ namespace DeejAppWPF
                                 if (response.Contains("|") && response.Split("|")[0] == "DeejApp")
                                 {
                                     serialPort.Close();
-                                    return port;
+                                    return settingsManager.serialPort;
                                 }
                             }
                             serialPort.Close();
                         }
+                        settingsManager.SetSettings("serialPort", "none");
                     }
                     catch (Exception ex)
                     {
+                        settingsManager.SetSettings("serialPort", "none");
                         Console.WriteLine("Hata: " + ex.Message);
-                        continue;
                     }
+                    return ScanPorts();
                 }
-                return null;
             }
 
             string arduinoPort = FindArduinoPort();
