@@ -37,7 +37,8 @@ namespace DeejAppWPF.Scripts
 
         private String GetJsonString()
         {
-            return File.ReadAllText("assets/presets.json");
+            string temp = File.ReadAllText("assets/presets.json");
+            return temp;
         }
 
         public Dictionary<String, String> GetPreset()
@@ -58,7 +59,7 @@ namespace DeejAppWPF.Scripts
             if (data[2] != "") jsonObject[data[0]]["sessionOne"] = data[2];
             if (data[3] != "") jsonObject[data[0]]["sessionTwo"] = data[3];
 
-            File.WriteAllText("presets.json", jsonObject.ToString());
+            File.WriteAllText("assets/presets.json", jsonObject.ToString());
 
             microphone = data[1];
             sessionOne = data[2];
