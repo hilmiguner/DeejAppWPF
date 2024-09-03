@@ -10,22 +10,18 @@ using System.Threading.Tasks;
 
 namespace DeejAppWPF.Scripts
 {
-    class NAudioManagement
+    public class NAudioManagement
     {
         private MMDeviceEnumerator deviceEnumerator;
         public MMDevice audioDevice;
         private MMDevice recordingDevice;
 
-        private MainWindow mainWindowObject;
-
         public KeyValuePair<String, List<SessionItem>>[] currentSessions = new KeyValuePair<String, List<SessionItem>>[2];
 
         public Dictionary<String, List<SessionItem>> allSessions;
         public List<MicrophoneItem> allMicrophones;
-        public NAudioManagement(MainWindow mainWindow)
+        public NAudioManagement()
         {
-            mainWindowObject = mainWindow;
-
             InitializeDevices();
 
             allSessions = GetSessions();
@@ -92,16 +88,7 @@ namespace DeejAppWPF.Scripts
             deviceEnumerator = new MMDeviceEnumerator();
             audioDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
             recordingDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
-
-            audioDevice.AudioSessionManager.OnSessionCreated += AudioSessionManager_OnSessionCreated;
         }
-
-        private void AudioSessionManager_OnSessionCreated(object sender, IAudioSessionControl session)
-        {
-            AudioSessionControl temp = new AudioSessionControl(session);
-            Debug.Print("New audio session created: " + temp.GetSessionIdentifier);
-            mainWindowObject.InitializeSessions();
-            mainWindowObject.SetCurrentPreset("presetOne");
-        }
+ 
     }
 }

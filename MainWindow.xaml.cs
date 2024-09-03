@@ -28,45 +28,27 @@ namespace DeejAppWPF
     /// </summary>
     public partial class MainWindow : System.Windows.Window
     {
-        private NotifyIcon notifyIcon;
-
-        private NAudioManagement nAudioManager;
-
         private System.Windows.Controls.Image[] images = new System.Windows.Controls.Image[2];
         private System.Windows.Controls.ComboBox[] comboBoxes = new System.Windows.Controls.ComboBox[2];
         private Slider[] sliders = new Slider[2];
-
-        private SerialPort serialPort;
-
+        private NAudioManagement nAudioManager;
         private PresetManager presetManager;
-
-        private SettingsManager settingsManager;
-
-        public MainWindow()
+        private SerialPort serialPort;
+        public MainWindow(NAudioManagement nAudioManager, SerialPort serialPort)
         {
-            InitializeComponent();
-            InitializeNotifyIcon();
-
-            nAudioManager = new NAudioManagement(this);
+            this.nAudioManager = nAudioManager;
+            this.serialPort = serialPort;
+            serialPort.DataReceived += DataReceivedHandler;
             presetManager = new PresetManager();
-            settingsManager = new SettingsManager();
-
+            InitializeComponent();
             InitializeImages();
             InitializeComboBoxes();
             InitializeSessions();
             InitializeMicrophones();
-            InitializeSerialCommunication();
-
             SetCurrentPreset("presetOne");
         }
 
-        private float Normalize(float value)
-        {
-            float newValue = (value / 1021);
-            return newValue > 1 ? 1 : newValue;
-        }
-
-        private void UpdateValues(float[] pins)
+        public void UpdateValues(float[] pins)
         {
             try
             {
@@ -86,6 +68,10 @@ namespace DeejAppWPF
 
         private void UpdateMasterLevel(float newValue)
         {
+            //DEBUG START
+            //Debug.Print((nAudioManager.audioDevice.AudioEndpointVolume == null).ToString());
+            //DEBUG END
+
             // Mute check BEGIN
             if (newValue == 0.0d)
             {
@@ -202,27 +188,26 @@ namespace DeejAppWPF
             run_sessionTwo.Text = ((int)(newValue * 100)).ToString();
         }
 
-        public void InitializeNotifyIcon()
+        private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
-            ContextMenuStrip contextMenu = new ContextMenuStrip();
-            contextMenu.Items.Add("Open Deej App", null, showApp);
-            contextMenu.Items.Add("Close App", null, closeApp);
-            notifyIcon = new NotifyIcon();
-            notifyIcon.ContextMenuStrip = contextMenu;
-            notifyIcon.Icon = new Icon(System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/assets/image/deejApp.ico")).Stream);
-            notifyIcon.Visible = true;
-        }
-
-        private void showApp(object sender, EventArgs e)
-        {
-            this.Show();
-        }
-
-        private void closeApp(object sender, EventArgs e)
-        {
-            notifyIcon.Visible = false;
-            notifyIcon.Dispose();
-            System.Windows.Application.Current.Shutdown();
+            try
+            {
+                string data = serialPort.ReadLine();
+                string[] dataList = data.Split("|");
+                float[] pins = new float[4];
+                pins[0] = HelperFunctions.Normalize(float.Parse(dataList[1]));
+                pins[1] = HelperFunctions.Normalize(float.Parse(dataList[2]));
+                pins[2] = HelperFunctions.Normalize(float.Parse(dataList[3]));
+                pins[3] = HelperFunctions.Normalize(float.Parse(dataList[4]));
+                /*                int tempCount = 0;
+                                foreach (var item in pins)
+                                {
+                                    tempCount++;
+                                    Debug.Print(tempCount.ToString() + ". pin değeri: " + item.ToString());
+                                }*/
+                UpdateValues(pins);
+            }
+            catch (Exception ex) { }
         }
 
         private void InitializeImages()
@@ -235,6 +220,14 @@ namespace DeejAppWPF
         {
             comboBoxes[0] = comboBox_sessionOne;
             comboBoxes[1] = comboBox_sessionTwo;
+        }
+
+        private void InitializeMicrophones()
+        {
+            nAudioManager.FetchMicrophones();
+
+            comboBox_microphones.ItemsSource = nAudioManager.GetAllMicrophones();
+            comboBox_microphones.DisplayMemberPath = "name";
         }
 
         public void InitializeSessions()
@@ -251,152 +244,6 @@ namespace DeejAppWPF
             }
         }
 
-        private void InitializeMicrophones()
-        {
-            nAudioManager.FetchMicrophones();
-
-            comboBox_microphones.ItemsSource = nAudioManager.GetAllMicrophones();
-            comboBox_microphones.DisplayMemberPath = "name";
-        }
-
-        public void InitializeSerialCommunication()
-        {
-            string FindArduinoPort()
-            {
-                string ScanPorts()
-                {
-                    string[] ports = SerialPort.GetPortNames();
-                    foreach (string port in ports)
-                    {
-                        try
-                        {
-                            using (SerialPort serialPort = new SerialPort(port, 19200))
-                            {
-                                serialPort.ReadTimeout = 2000;
-
-                                if (serialPort.IsOpen)
-                                {
-                                    serialPort.Close();
-                                }
-
-                                serialPort.Open();
-
-                                Thread.Sleep(2000);
-
-                                string response;
-                                //string response = serialPort.ReadTo("\n");
-                                for (int i = 0; i < 3; i++)
-                                {
-                                    response = serialPort.ReadLine();
-                                    Debug.Print("Gelen yanıt: " + response);
-                                    if (response.Contains("|") && response.Split("|")[0] == "DeejApp")
-                                    {
-                                        serialPort.Close();
-                                        settingsManager.SetSettings("serialPort", port);
-                                        return port;
-                                    }
-                                }
-                                serialPort.Close();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("Hata: " + ex.Message);
-                            continue;
-                        }
-                    }
-                    return null;
-                }
-                
-                if (settingsManager.serialPort == "none")
-                {
-                    return ScanPorts();
-                }
-                else 
-                {
-                    try
-                    {
-                        using (SerialPort serialPort = new SerialPort(settingsManager.serialPort, 19200))
-                        {
-                            serialPort.ReadTimeout = 2000;
-
-                            if (serialPort.IsOpen)
-                            {
-                                serialPort.Close();
-                            }
-
-                            serialPort.Open();
-
-                            Thread.Sleep(2000);
-
-                            string response;
-                            //string response = serialPort.ReadTo("\n");
-                            for (int i = 0; i < 3; i++)
-                            {
-                                response = serialPort.ReadLine();
-                                Debug.Print("Gelen yanıt: " + response);
-                                if (response.Contains("|") && response.Split("|")[0] == "DeejApp")
-                                {
-                                    serialPort.Close();
-                                    return settingsManager.serialPort;
-                                }
-                            }
-                            serialPort.Close();
-                        }
-                        settingsManager.SetSettings("serialPort", "none");
-                    }
-                    catch (Exception ex)
-                    {
-                        settingsManager.SetSettings("serialPort", "none");
-                        Console.WriteLine("Hata: " + ex.Message);
-                    }
-                    return ScanPorts();
-                }
-            }
-
-            string arduinoPort = FindArduinoPort();
-
-            if (arduinoPort != null)
-            {
-                while (serialPort == null)
-                {
-                    Debug.Print("ARDUINO BULUNDU. " + arduinoPort);
-                    serialPort = new SerialPort(arduinoPort, 19200);
-                    serialPort.Open();
-                    Thread.Sleep(2000);
-                    serialPort.ReadLine();
-                    serialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
-                    serialPort.ReadLine();
-                }
-            }
-            else
-            {
-                Debug.Print("ARDUINO BULUNAMADI.");
-            }
-        }
-
-        private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
-        {
-            try
-            {
-                string data = serialPort.ReadLine();
-                string[] dataList = data.Split("|");
-                float[] pins = new float[4];
-                pins[0] = Normalize(float.Parse(dataList[1]));
-                pins[1] = Normalize(float.Parse(dataList[2]));
-                pins[2] = Normalize(float.Parse(dataList[3]));
-                pins[3] = Normalize(float.Parse(dataList[4]));
-/*                int tempCount = 0;
-                foreach (var item in pins)
-                {
-                    tempCount++;
-                    Debug.Print(tempCount.ToString() + ". pin değeri: " + item.ToString());
-                }*/
-                UpdateValues(pins);
-            }
-            catch (Exception ex) { }
-        }
-
         public void SetCurrentPreset(string presetName)
         {
             presetManager.FetchPreset(presetName);
@@ -406,7 +253,7 @@ namespace DeejAppWPF
             {
                 foreach (MicrophoneItem session in comboBox_microphones.ItemsSource)
                 {
-                    if (session.name.ToLower() == presets["microphone"].ToLower()) 
+                    if (session.name.ToLower() == presets["microphone"].ToLower())
                     {
                         this.Dispatcher.Invoke(() =>
                         {
@@ -446,6 +293,11 @@ namespace DeejAppWPF
                     }
                 }
             }
+        }
+
+        public void showApp(object sender, EventArgs e)
+        {
+            this.Show();
         }
 
         private BitmapImage IconToBitmapImage(Icon icon)

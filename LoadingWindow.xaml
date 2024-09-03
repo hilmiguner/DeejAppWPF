@@ -1,0 +1,60 @@
+﻿<Window x:Class="DeejAppWPF.LoadingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DeejAppWPF"
+        mc:Ignorable="d"
+        Title="LoadingWindow" Height="400" Width="400" WindowStyle="None" ResizeMode="NoResize"
+        AllowsTransparency="True" Background="Transparent" WindowStartupLocation="CenterScreen"
+>
+    <Border CornerRadius="50" Background="White">
+        <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Label Content="LOADING TEXT" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+            <Canvas Width="100"  Height="100" Grid.Column="0" Grid.Row="1">
+                <!-- Small circles to create a loading spinner -->
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Left="42.5" Canvas.Top="0"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Right="21.25" Canvas.Top="5.7"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Right="5.7" Canvas.Top="21.25"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Right="0" Canvas.Top="42.5"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Right="5.7" Canvas.Bottom="21.25"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Right="21.25" Canvas.Bottom="5.7"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Left="42.5" Canvas.Bottom="0"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Left="21.25" Canvas.Bottom="5.7"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Left="5.7" Canvas.Bottom="21.25"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Left="0" Canvas.Top="42.5"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Left="5.7" Canvas.Top="21.25"/>
+                <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Left="21.25" Canvas.Top="5.7"/>
+                
+                <!-- Rotating container -->
+                <Canvas.RenderTransform>
+                    <RotateTransform x:Name="spinnerRotateTransform" CenterX="50" CenterY="50"/>
+                </Canvas.RenderTransform>
+            </Canvas>
+
+            <!-- Triggering the rotation animation -->
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="Grid.Loaded">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation
+                            Storyboard.TargetName="spinnerRotateTransform"
+                            Storyboard.TargetProperty="(RotateTransform.Angle)"
+                            From="0"
+                            To="360"
+                            Duration="0:0:3"
+                            RepeatBehavior="Forever"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
+        </Grid>
+    </Border>
+</Window>
