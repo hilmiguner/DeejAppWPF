@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DeejAppWPF"
         mc:Ignorable="d"
-        Title="LoadingWindow" Height="400" Width="400" WindowStyle="None" ResizeMode="NoResize"
+        Title="LoadingWindow" Height="300" Width="300" WindowStyle="None" ResizeMode="NoResize"
         AllowsTransparency="True" Background="Transparent" WindowStartupLocation="CenterScreen"
 >
     <Border CornerRadius="50" Background="White">
@@ -17,7 +17,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <Label Content="LOADING TEXT" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+            <Label x:Name="label_loadingText" Content="Connecting to device..." HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
             <Canvas Width="100"  Height="100" Grid.Column="0" Grid.Row="1">
                 <!-- Small circles to create a loading spinner -->
                 <Ellipse Fill="LightGray" Width="15" Height="15" Canvas.Left="42.5" Canvas.Top="0"/>

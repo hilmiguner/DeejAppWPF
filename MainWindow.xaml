@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DeejAppWPF"
         mc:Ignorable="d"
-        Title="Deej App" Width="750" Height="333" Closing="Window_Closing" Icon="/assets/image/deejApp.ico">
+        Title="Deej App" Width="750" Height="333" Closing="Window_Closing" Icon="/assets/image/deejApp.ico"
+        WindowStartupLocation="CenterScreen"
+        >
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
