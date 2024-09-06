@@ -20,13 +20,13 @@ namespace DeejAppWPF.Scripts
         private SerialPort serialPort;
         private SettingsManager settingsManager;
         private MainWindow mainWindow;
+        private Task serialPortChecker;
+        private LoadingWindow loadingWindow;
         public AppManagement() 
         {
             InitializeNotifyIcon();
 
-            LoadingWindow loadingWindow = new LoadingWindow();
-            loadingWindow.Show();
-
+            loadingWindow = new LoadingWindow();
             Task.Run(() =>
             {
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
@@ -43,11 +43,13 @@ namespace DeejAppWPF.Scripts
                 
                 if (isSerialPortInitialized)
                 {
+                    serialPortChecker = Task.Run(AsyncSerialCommunicationChecker);
                     if (mainWindow != null) System.Windows.Application.Current.Dispatcher.Invoke(() => mainWindow.Show());
                 }
 
-                System.Windows.Application.Current.Dispatcher.Invoke(() => loadingWindow.Close());
+                System.Windows.Application.Current.Dispatcher.Invoke(() => loadingWindow.Hide());
             });
+            loadingWindow.ShowDialog();
         }
 
         private void InitializeNotifyIcon()
@@ -194,5 +196,69 @@ namespace DeejAppWPF.Scripts
             mainWindow.SetCurrentPreset("presetOne");
         }
 
+        private void AsyncSerialCommunicationChecker()
+        {
+            while (true)
+            {
+                if (serialPort.IsOpen) {
+                    Debug.Print("Serial açık");
+                    if (!mainWindow.IsControlsEnabled)
+                    {
+                        mainWindow.ToggleControls();
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            loadingWindow.Hide();
+                        });
+                    }
+                }
+                else
+                {
+                    if(mainWindow.IsControlsEnabled)
+                    {
+                        mainWindow.ToggleControls();
+
+                        Task.Run(() => 
+                        {
+                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                loadingWindow.SetLoadingText("Trying reconnect to device...");
+                                loadingWindow.ShowDialog();
+                            });
+                        });
+                        
+                    }
+                    Debug.Print("Serial KAPALI");
+                    Debug.Print("Tüm port listesi alınıyor...");
+                    bool isComFound = false;
+                    foreach (string portName in SerialPort.GetPortNames())
+                    {
+                        if (portName == serialPort.PortName)
+                        {
+                            Debug.Print("Port bulundu");
+                            isComFound = true;
+                            break;
+                        }
+                    }
+                    if (isComFound)
+                    {
+                        Debug.Print("Tekrar açılması deneniyor.");
+                        serialPort.Open();
+                    }
+                    else
+                    {
+                        Debug.Print("Port bulunamadı. Port adı değişmiş olabilir. Port adları baştan taranıyor.");
+                        bool didInitialized = InitializeSerialCommunication();
+                        if (didInitialized)
+                        {
+                            mainWindow.serialPort = serialPort;
+                            mainWindow.serialPort.DataReceived += mainWindow.DataReceivedHandler;
+                            Debug.Print("İletişim tekrardan kuruldu.");
+                        }
+                        else Debug.Print("İletişim kurulamadı. Cihazı yuvasından çıkmış gibi görünüyor.");
+                    }
+                }
+                Thread.Sleep(2000);
+            }
+        }
     }
 }

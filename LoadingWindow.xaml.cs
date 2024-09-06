@@ -27,5 +27,10 @@ namespace DeejAppWPF
         {
             InitializeComponent();
         }
+
+        public void SetLoadingText(string text)
+        {
+            label_loadingText.Content = text;
+        }
     }
 }

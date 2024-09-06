@@ -31,9 +31,10 @@ namespace DeejAppWPF
         private System.Windows.Controls.Image[] images = new System.Windows.Controls.Image[2];
         private System.Windows.Controls.ComboBox[] comboBoxes = new System.Windows.Controls.ComboBox[2];
         private Slider[] sliders = new Slider[2];
+        public bool IsControlsEnabled = true;
         private NAudioManagement nAudioManager;
         private PresetManager presetManager;
-        private SerialPort serialPort;
+        public SerialPort serialPort;
         public MainWindow(NAudioManagement nAudioManager, SerialPort serialPort)
         {
             this.nAudioManager = nAudioManager;
@@ -188,26 +189,20 @@ namespace DeejAppWPF
             run_sessionTwo.Text = ((int)(newValue * 100)).ToString();
         }
 
-        private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
+        public void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
+            string data = serialPort.ReadLine();
+            string[] dataList = data.Split("|");
+            float[] pins = new float[4];
             try
             {
-                string data = serialPort.ReadLine();
-                string[] dataList = data.Split("|");
-                float[] pins = new float[4];
                 pins[0] = HelperFunctions.Normalize(float.Parse(dataList[1]));
                 pins[1] = HelperFunctions.Normalize(float.Parse(dataList[2]));
                 pins[2] = HelperFunctions.Normalize(float.Parse(dataList[3]));
                 pins[3] = HelperFunctions.Normalize(float.Parse(dataList[4]));
-                /*                int tempCount = 0;
-                                foreach (var item in pins)
-                                {
-                                    tempCount++;
-                                    Debug.Print(tempCount.ToString() + ". pin değeri: " + item.ToString());
-                                }*/
-                UpdateValues(pins);
             }
-            catch (Exception ex) { }
+            catch { }
+            UpdateValues(pins);
         }
 
         private void InitializeImages()
@@ -434,5 +429,24 @@ namespace DeejAppWPF
 
             return strings;
         }  
+ 
+        public void ToggleControls()
+        {
+            foreach (var comboBox in comboBoxes)
+            {
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (IsControlsEnabled) comboBox.IsEnabled = false;
+                    else comboBox.IsEnabled = true;
+                }); 
+            }
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (IsControlsEnabled) comboBox_microphones.IsEnabled = false;
+                else comboBox_microphones.IsEnabled = true;
+            });
+            IsControlsEnabled = !IsControlsEnabled;
+        }
+
     }
 }
