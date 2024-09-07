@@ -33,6 +33,7 @@ namespace DeejAppWPF.Scripts
                 {
                     nAudioManager = new NAudioManagement();
                     nAudioManager.audioDevice.AudioSessionManager.OnSessionCreated += AudioSessionManager_OnSessionCreated;
+                    Task.Run(AsyncDefaultAudioDeviceChecker);
                 });
 
                 settingsManager = new SettingsManager();
@@ -50,6 +51,8 @@ namespace DeejAppWPF.Scripts
                 System.Windows.Application.Current.Dispatcher.Invoke(() => loadingWindow.Hide());
             });
             loadingWindow.ShowDialog();
+
+            
         }
 
         private void InitializeNotifyIcon()
@@ -282,6 +285,33 @@ namespace DeejAppWPF.Scripts
 
                 // TODO2: When audio output device (e.g Headphone, Monitor) changes, it should also change in code.
                 Thread.Sleep(2000);
+            }
+        }
+
+        private void AsyncDefaultAudioDeviceChecker()
+        {
+            MMDevice tempDevice;
+            MMDevice currentDevice;
+            while (true)
+            {
+                try
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        tempDevice = nAudioManager.deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                        currentDevice = nAudioManager.audioDevice;
+                        if (currentDevice.DeviceFriendlyName != tempDevice.DeviceFriendlyName)
+                        {
+                            Debug.Print("Cihaz değişti");
+                            nAudioManager.InitializeDevices();
+                        }
+                    });
+                }
+                catch (Exception e) { }
+                finally
+                {
+                    Thread.Sleep(2000);
+                }
             }
         }
     }

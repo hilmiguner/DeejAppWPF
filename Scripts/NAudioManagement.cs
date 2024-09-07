@@ -12,7 +12,7 @@ namespace DeejAppWPF.Scripts
 {
     public class NAudioManagement
     {
-        private MMDeviceEnumerator deviceEnumerator;
+        public MMDeviceEnumerator deviceEnumerator;
         public MMDevice audioDevice;
         private MMDevice recordingDevice;
 
