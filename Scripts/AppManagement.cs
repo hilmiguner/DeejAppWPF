@@ -282,8 +282,6 @@ namespace DeejAppWPF.Scripts
                 // sessionController.state == AudioSessionState.AudioSessionStateInactive;
                 // or
                 // sessionController.state == AudioSessionState.AudioSessionStateActive;
-
-                // TODO2: When audio output device (e.g Headphone, Monitor) changes, it should also change in code.
                 Thread.Sleep(2000);
             }
         }
@@ -304,6 +302,8 @@ namespace DeejAppWPF.Scripts
                         {
                             Debug.Print("Cihaz değişti");
                             nAudioManager.InitializeDevices();
+                            mainWindow.InitializeSessions();
+                            mainWindow.SetCurrentPreset("presetOne");
                         }
                     });
                 }

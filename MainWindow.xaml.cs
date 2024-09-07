@@ -227,6 +227,10 @@ namespace DeejAppWPF
 
         public void InitializeSessions()
         {
+            foreach (System.Windows.Controls.Image image in images)
+            {
+                image.Source = null;
+            }
             nAudioManager.FetchSessions();
             foreach (System.Windows.Controls.ComboBox comboBox in comboBoxes)
             {
