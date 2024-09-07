@@ -7,6 +7,7 @@
         mc:Ignorable="d"
         Title="LoadingWindow" Height="300" Width="300" WindowStyle="None" ResizeMode="NoResize"
         AllowsTransparency="True" Background="Transparent" WindowStartupLocation="CenterScreen"
+        Icon="/assets/image/deejApp.ico"
 >
     <Border CornerRadius="50" Background="White">
         <Grid HorizontalAlignment="Center" VerticalAlignment="Center">

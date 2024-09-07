@@ -60,6 +60,8 @@ namespace DeejAppWPF.Scripts
             notifyIcon = new NotifyIcon();
             notifyIcon.ContextMenuStrip = contextMenu;
             notifyIcon.Icon = new Icon(System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/assets/image/deejApp.ico")).Stream);
+            notifyIcon.MouseClick += notifyIconMouseDoubleClick;
+            notifyIcon.MouseDoubleClick += notifyIconMouseDoubleClick;
             notifyIcon.Visible = true;
         }
 
@@ -73,6 +75,11 @@ namespace DeejAppWPF.Scripts
             notifyIcon.Visible = false;
             notifyIcon.Dispose();
             System.Windows.Application.Current.Shutdown();
+        }
+
+        private void notifyIconMouseDoubleClick(object sender, EventArgs e)
+        {
+            if (mainWindow != null) System.Windows.Application.Current.Dispatcher.Invoke(() => mainWindow.Show());
         }
 
         public bool InitializeSerialCommunication()
@@ -257,6 +264,23 @@ namespace DeejAppWPF.Scripts
                         else Debug.Print("İletişim kurulamadı. Cihazı yuvasından çıkmış gibi görünüyor.");
                     }
                 }
+                Thread.Sleep(2000);
+            }
+        }
+    
+        private void AsyncSessionStateChecker()
+        {
+            while (true)
+            {
+                // TODO: Every session's state will be checked in every 2 seconds for expiration of state.
+                // Use these methods:
+                // sessionController.state == AudioSessionState.AudioSessionStateExpired;
+                // or
+                // sessionController.state == AudioSessionState.AudioSessionStateInactive;
+                // or
+                // sessionController.state == AudioSessionState.AudioSessionStateActive;
+
+                // TODO2: When audio output device (e.g Headphone, Monitor) changes, it should also change in code.
                 Thread.Sleep(2000);
             }
         }
