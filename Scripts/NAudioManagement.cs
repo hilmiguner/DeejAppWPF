@@ -22,14 +22,17 @@ namespace DeejAppWPF.Scripts
         public List<MicrophoneItem> allMicrophones;
         public NAudioManagement()
         {
+            HelperFunctions.Log("NAudioManagement objesi oluşturuluyor (NAudioManagement Constructor)", HelperFunctions.LogForm.Log);
             InitializeDevices();
 
             allSessions = GetSessions();
             allMicrophones = GetAllMicrophones();
+            HelperFunctions.Log("NAudioManagement objesi oluşturuldu (NAudioManagement Constructor)", HelperFunctions.LogForm.Log);
         }
 
         public Dictionary<String, List<SessionItem>> GetSessions()
         {
+            HelperFunctions.Log("Session dictionary oluşturuluyor (NAudioManagement.GetSessions)", HelperFunctions.LogForm.Log);
             Dictionary<String, List<SessionItem>> sessionDict = new Dictionary<String, List<SessionItem>>();
 
             audioDevice.AudioSessionManager.RefreshSessions();
@@ -51,12 +54,13 @@ namespace DeejAppWPF.Scripts
                     }
                     catch (Exception ex)
                     {
-
+                        HelperFunctions.Log(ex.Message+" (NAudioManagement.GetSessions)", HelperFunctions.LogForm.Error);
                     }
                     if (!sessionDict.ContainsKey(name)) sessionDict[name] = new List<SessionItem>();
                     sessionDict[name].Add(new SessionItem { processID = processID, controller = sessionController, icon = icon, name = name });
                 }
             }
+            HelperFunctions.Log("Session dictionary oluşturuldu (NAudioManagement.GetSessions)", HelperFunctions.LogForm.Log);
             return sessionDict;
         }
 
@@ -67,6 +71,7 @@ namespace DeejAppWPF.Scripts
 
         public List<MicrophoneItem> GetAllMicrophones()
         {
+            HelperFunctions.Log("Mikrofon listesi oluşturuluyor (NAudioManagement.GetAllMicrophones)", HelperFunctions.LogForm.Log);
             List<MicrophoneItem> microphones = new List<MicrophoneItem>();
             MMDeviceCollection devices = deviceEnumerator.EnumerateAudioEndPoints(DataFlow.Capture, DeviceState.Active);
 
@@ -74,7 +79,7 @@ namespace DeejAppWPF.Scripts
             {
                 microphones.Add(new MicrophoneItem { deviceID = device.ID, device = device, name = device.DeviceFriendlyName });
             }
-
+            HelperFunctions.Log("Mikrofon listesi oluşturuldu (NAudioManagement.GetAllMicrophones)", HelperFunctions.LogForm.Log);
             return microphones;
         }
 
@@ -85,9 +90,11 @@ namespace DeejAppWPF.Scripts
 
         public void InitializeDevices()
         {
+            HelperFunctions.Log("NAudio cihazları oluşturuluyor (NAudioManagement.InitializeDevices)", HelperFunctions.LogForm.Log);
             deviceEnumerator = new MMDeviceEnumerator();
             audioDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
             recordingDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
+            HelperFunctions.Log("NAudio cihazları oluşturdu (NAudioManagement.InitializeDevices)", HelperFunctions.LogForm.Log);
         }
  
     }

@@ -20,7 +20,9 @@ namespace DeejAppWPF.Scripts
 
         public PresetManager() 
         {
+            HelperFunctions.Log("PresetManager objesi oluşturuluyor (PresetManager Constructor)", HelperFunctions.LogForm.Log);
             FetchPreset("presetOne");
+            HelperFunctions.Log("PresetManager objesi oluşturuldu (PresetManager Constructor)", HelperFunctions.LogForm.Log);
         }
 
         public void FetchPreset(string presetName)

@@ -37,9 +37,11 @@ namespace DeejAppWPF
         public SerialPort serialPort;
         public MainWindow(NAudioManagement nAudioManager, SerialPort serialPort)
         {
+            HelperFunctions.Log("MainWindow objesi oluşturuluyor (MainWindow Constructor)", HelperFunctions.LogForm.Log);
             this.nAudioManager = nAudioManager;
             this.serialPort = serialPort;
             serialPort.DataReceived += DataReceivedHandler;
+            HelperFunctions.Log("Serial port data received eventi bağlandı (MainWindow Constructor)", HelperFunctions.LogForm.Log);
             presetManager = new PresetManager();
             InitializeComponent();
             InitializeImages();
@@ -47,6 +49,7 @@ namespace DeejAppWPF
             InitializeSessions();
             InitializeMicrophones();
             SetCurrentPreset("presetOne");
+            HelperFunctions.Log("MainWindow objesi oluşturuldu (MainWindow Constructor)", HelperFunctions.LogForm.Log);
         }
 
         public void UpdateValues(float[] pins)

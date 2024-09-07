@@ -14,7 +14,9 @@ namespace DeejAppWPF.Scripts
         public string serialPort;
         public SettingsManager() 
         {
+            HelperFunctions.Log("SettingsManager oluşturuluyor (SettingsManager Constructor)", HelperFunctions.LogForm.Log);
             ReadSettingsFile();
+            HelperFunctions.Log("SettingsManager oluşturuldu (SettingsManager Constructor)", HelperFunctions.LogForm.Log);
         }
         private String GetJsonContent()
         {
