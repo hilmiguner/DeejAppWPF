@@ -48,7 +48,10 @@ namespace DeejAppWPF.Scripts
                     if (mainWindow != null) System.Windows.Application.Current.Dispatcher.Invoke(() => mainWindow.Show());
                 }
 
-                System.Windows.Application.Current.Dispatcher.Invoke(() => loadingWindow.Hide());
+                System.Windows.Application.Current.Dispatcher.Invoke(() => {
+                    loadingWindow.Hide();
+                    Task.Run(AsyncSessionStateChecker);
+                });
             });
             loadingWindow.ShowDialog();
 
@@ -200,8 +203,6 @@ namespace DeejAppWPF.Scripts
 
         public void AudioSessionManager_OnSessionCreated(object sender, IAudioSessionControl session)
         {
-            AudioSessionControl temp = new AudioSessionControl(session);
-            Debug.Print("New audio session created: " + temp.GetSessionIdentifier);
             mainWindow.InitializeSessions();
             mainWindow.SetCurrentPreset("presetOne");
         }
@@ -211,7 +212,6 @@ namespace DeejAppWPF.Scripts
             while (true)
             {
                 if (serialPort.IsOpen) {
-                    Debug.Print("Serial açık");
                     if (!mainWindow.IsControlsEnabled)
                     {
                         mainWindow.ToggleControls();
@@ -237,34 +237,27 @@ namespace DeejAppWPF.Scripts
                         });
                         
                     }
-                    Debug.Print("Serial KAPALI");
-                    Debug.Print("Tüm port listesi alınıyor...");
                     bool isComFound = false;
                     foreach (string portName in SerialPort.GetPortNames())
                     {
                         if (portName == serialPort.PortName)
                         {
-                            Debug.Print("Port bulundu");
                             isComFound = true;
                             break;
                         }
                     }
                     if (isComFound)
                     {
-                        Debug.Print("Tekrar açılması deneniyor.");
                         serialPort.Open();
                     }
                     else
                     {
-                        Debug.Print("Port bulunamadı. Port adı değişmiş olabilir. Port adları baştan taranıyor.");
                         bool didInitialized = InitializeSerialCommunication();
                         if (didInitialized)
                         {
                             mainWindow.serialPort = serialPort;
                             mainWindow.serialPort.DataReceived += mainWindow.DataReceivedHandler;
-                            Debug.Print("İletişim tekrardan kuruldu.");
                         }
-                        else Debug.Print("İletişim kurulamadı. Cihazı yuvasından çıkmış gibi görünüyor.");
                     }
                 }
                 Thread.Sleep(2000);
@@ -275,13 +268,20 @@ namespace DeejAppWPF.Scripts
         {
             while (true)
             {
-                // TODO: Every session's state will be checked in every 2 seconds for expiration of state.
-                // Use these methods:
-                // sessionController.state == AudioSessionState.AudioSessionStateExpired;
-                // or
-                // sessionController.state == AudioSessionState.AudioSessionStateInactive;
-                // or
-                // sessionController.state == AudioSessionState.AudioSessionStateActive;
+                foreach (var sessionDictionary in nAudioManager.allSessions)
+                {
+                    foreach (var session in sessionDictionary.Value)
+                    {
+                        if (session.controller.State == AudioSessionState.AudioSessionStateExpired)
+                        {
+                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                mainWindow.InitializeSessions();
+                                mainWindow.SetCurrentPreset("presetOne");
+                            });
+                        }
+                    }
+                }
                 Thread.Sleep(2000);
             }
         }
@@ -300,8 +300,8 @@ namespace DeejAppWPF.Scripts
                         currentDevice = nAudioManager.audioDevice;
                         if (currentDevice.DeviceFriendlyName != tempDevice.DeviceFriendlyName)
                         {
-                            Debug.Print("Cihaz değişti");
                             nAudioManager.InitializeDevices();
+                            nAudioManager.audioDevice.AudioSessionManager.OnSessionCreated += AudioSessionManager_OnSessionCreated;
                             mainWindow.InitializeSessions();
                             mainWindow.SetCurrentPreset("presetOne");
                         }

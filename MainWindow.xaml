@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:DeejAppWPF"
         mc:Ignorable="d"
         Title="Deej App" Width="750" Height="333" Closing="Window_Closing" Icon="/assets/image/deejApp.ico"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
         >
     <Grid>
         <Grid.RowDefinitions>

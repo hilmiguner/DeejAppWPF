@@ -229,7 +229,7 @@ namespace DeejAppWPF
         {
             foreach (System.Windows.Controls.Image image in images)
             {
-                image.Source = null;
+                this.Dispatcher.Invoke(() => image.Source = null);
             }
             nAudioManager.FetchSessions();
             foreach (System.Windows.Controls.ComboBox comboBox in comboBoxes)
