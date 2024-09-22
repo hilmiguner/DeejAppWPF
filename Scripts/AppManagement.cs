@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Management;
 
 namespace DeejAppWPF.Scripts
 {
@@ -54,8 +55,6 @@ namespace DeejAppWPF.Scripts
                 });
             });
             loadingWindow.ShowDialog();
-
-            
         }
 
         private void InitializeNotifyIcon()
@@ -88,117 +87,94 @@ namespace DeejAppWPF.Scripts
             if (mainWindow != null) System.Windows.Application.Current.Dispatcher.Invoke(() => mainWindow.Show());
         }
 
-        public bool InitializeSerialCommunication()
+        private Dictionary<string, string> ScanAllPorts()
         {
-            string FindArduinoPort()
+            string query = "SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%(COM%'";
+            string driverNameWithCom = "";
+            Dictionary<string, string> resultDict = new Dictionary<string, string>();
+
+            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(query))
             {
-                string ScanPorts()
+                foreach (ManagementObject obj in searcher.Get())
                 {
-                    string[] ports = SerialPort.GetPortNames();
-                    foreach (string port in ports)
+                    driverNameWithCom = obj["Caption"].ToString();
+                    if (driverNameWithCom.Contains("(COM"))
                     {
-                        try
+                        if(driverNameWithCom.Split("(COM")[0].Trim() == "USB-SERIAL CH340")
                         {
-                            using (SerialPort serialPort = new SerialPort(port, 9600))
-                            {
-                                serialPort.ReadTimeout = 2000;
-
-                                if (serialPort.IsOpen)
-                                {
-                                    serialPort.Close();
-                                }
-
-                                serialPort.Open();
-
-                                Thread.Sleep(2000);
-
-                                string response;
-                                //string response = serialPort.ReadTo("\n");
-                                for (int i = 0; i < 3; i++)
-                                {
-                                    response = serialPort.ReadLine();
-                                    Debug.Print("Gelen yanıt: " + response);
-                                    if (response.Contains("|") && response.Split("|")[0] == "DeejApp")
-                                    {
-                                        serialPort.Close();
-                                        settingsManager.SetSettings("serialPort", port);
-                                        return port;
-                                    }
-                                }
-                                serialPort.Close();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("Hata: " + ex.Message);
-                            continue;
+                            resultDict["driverName"] = driverNameWithCom.Split("(COM")[0].Trim();
+                            resultDict["portName"] = driverNameWithCom.Split("(")[1].Split(")")[0];
+                            settingsManager.SetSettings("serialPort", resultDict["portName"]);
+                            return resultDict;
                         }
                     }
-                    return null;
                 }
+            }
+            return null;
+        }
 
+        private bool CheckDeviceName(string serialPort)
+        {
+            string query = "SELECT * FROM Win32_PnPEntity WHERE Name LIKE '%"+serialPort+"%'";
+            string driverNameWithCom = "";
+
+            using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(query))
+            {
+                foreach (ManagementObject obj in searcher.Get())
+                {
+                    driverNameWithCom = obj["Caption"].ToString();
+                    if (driverNameWithCom.Contains("(COM"))
+                    {
+                        if (driverNameWithCom.Split("(COM")[0].Trim() == "USB-SERIAL CH340") return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void ConnectSerialPort(string portName, int baudRate)
+        {
+            serialPort = new SerialPort(portName, baudRate);
+            serialPort.Open();
+            Thread.Sleep(2000);
+            serialPort.ReadLine();
+        }
+
+        public bool InitializeSerialCommunication()
+        {
+            bool isInitialized = false;
+            while (!isInitialized)
+            {
                 if (settingsManager.serialPort == "none")
                 {
-                    return ScanPorts();
+                    Dictionary<string, string> dict = ScanAllPorts();
+                    if (dict != null)
+                    {
+                        ConnectSerialPort(dict["portName"], 9600);
+                        isInitialized = true;
+                    }
                 }
                 else
                 {
-                    try
+                    bool isCachedPortRight = CheckDeviceName(settingsManager.serialPort);
+                    if (isCachedPortRight)
                     {
-                        using (SerialPort serialPort = new SerialPort(settingsManager.serialPort, 9600))
+                        ConnectSerialPort(settingsManager.serialPort, 9600);
+                        isInitialized = true;
+                    }
+                    else
+                    {
+                        settingsManager.SetSettings("serialPort", "none");
+                        Dictionary<string, string> dict = ScanAllPorts();
+                        if (dict != null)
                         {
-                            serialPort.ReadTimeout = 2000;
-
-                            if (serialPort.IsOpen)
-                            {
-                                serialPort.Close();
-                            }
-
-                            serialPort.Open();
-
-                            Thread.Sleep(2000);
-
-                            string response;
-                            //string response = serialPort.ReadTo("\n");
-                            for (int i = 0; i < 3; i++)
-                            {
-                                response = serialPort.ReadLine();
-                                Debug.Print("Gelen yanıt: " + response);
-                                if (response.Contains("|") && response.Split("|")[0] == "DeejApp")
-                                {
-                                    serialPort.Close();
-                                    return settingsManager.serialPort;
-                                }
-                            }
-                            serialPort.Close();
+                            ConnectSerialPort(dict["portName"], 9600);
+                            isInitialized = true;
                         }
-                        settingsManager.SetSettings("serialPort", "none");
                     }
-                    catch (Exception ex)
-                    {
-                        settingsManager.SetSettings("serialPort", "none");
-                        Console.WriteLine("Hata: " + ex.Message);
-                    }
-                    return ScanPorts();
                 }
             }
-
-            string arduinoPort = FindArduinoPort();
-
-            if (arduinoPort != null)
-            {
-                Debug.Print("ARDUINO BULUNDU. " + arduinoPort);
-                serialPort = new SerialPort(arduinoPort, 9600);
-                serialPort.Open();
-                Thread.Sleep(2000);
-                serialPort.ReadLine();
-                return true;
-            }
-            else
-            {
-                Debug.Print("ARDUINO BULUNAMADI.");
-                return false;
-            }
+            return isInitialized;
         }
 
         public void AudioSessionManager_OnSessionCreated(object sender, IAudioSessionControl session)
