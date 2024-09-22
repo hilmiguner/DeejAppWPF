@@ -99,7 +99,7 @@ namespace DeejAppWPF.Scripts
                     {
                         try
                         {
-                            using (SerialPort serialPort = new SerialPort(port, 19200))
+                            using (SerialPort serialPort = new SerialPort(port, 9600))
                             {
                                 serialPort.ReadTimeout = 2000;
 
@@ -145,7 +145,7 @@ namespace DeejAppWPF.Scripts
                 {
                     try
                     {
-                        using (SerialPort serialPort = new SerialPort(settingsManager.serialPort, 19200))
+                        using (SerialPort serialPort = new SerialPort(settingsManager.serialPort, 9600))
                         {
                             serialPort.ReadTimeout = 2000;
 
@@ -188,7 +188,7 @@ namespace DeejAppWPF.Scripts
             if (arduinoPort != null)
             {
                 Debug.Print("ARDUINO BULUNDU. " + arduinoPort);
-                serialPort = new SerialPort(arduinoPort, 19200);
+                serialPort = new SerialPort(arduinoPort, 9600);
                 serialPort.Open();
                 Thread.Sleep(2000);
                 serialPort.ReadLine();
