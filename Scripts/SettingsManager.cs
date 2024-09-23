@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json.Linq;
+using Microsoft.Win32;
 
 namespace DeejAppWPF.Scripts
 {
@@ -40,6 +41,35 @@ namespace DeejAppWPF.Scripts
             File.WriteAllText("assets/settings.json", jsonObject.ToString());
 
             if (key == "serialPort") serialPort = value;
+        }
+
+        public void AddToStartup()
+        {
+            // Uygulamanızın yolu
+            string applicationPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+
+            // Kayıt Defteri'ne erişim
+            RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+
+            // Anahtar yoksa oluşturun
+            if (registryKey == null)
+            {
+                registryKey = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run");
+            }
+
+            // Uygulamayı ekleyin
+            registryKey.SetValue("DeejApp", applicationPath);
+        }
+
+        public void RemoveFromStartup()
+        {
+            RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+
+            // Eğer anahtar varsa sil
+            if (registryKey != null)
+            {
+                registryKey.DeleteValue("DeejApp", false);
+            }
         }
     }
 }
