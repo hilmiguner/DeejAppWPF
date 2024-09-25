@@ -1,0 +1,95 @@
+﻿<Page x:Class="DeejAppWPF.MainPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:DeejAppWPF"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="MainPage">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <UniformGrid Columns="4"  Rows="1" Margin="10,10,10,10" Grid.Column="0" Grid.Row="0">
+            <Grid Margin="10,10,10,10" Grid.Column="0" Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Content="Master Audio" HorizontalAlignment="Center" Margin="0,0,0,10" Grid.Column="0" Grid.Row="0"/>
+                <Image Source="/assets/image/master_volume.png" Width="50" Height="50" Grid.Column="0" Grid.Row="1"/>
+                <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" Margin="0,10">
+Audio Volume: <Run x:Name="run_masterVolumeLevel">100</Run>
+                </TextBlock>
+                <ProgressBar x:Name="progressBar_MasterAudio" Grid.Column="0" Grid.Row="3" Height="15" Minimum="0" Maximum="100"/>
+            </Grid>
+            <Grid Margin="10,10,10,10" Grid.Column="1" Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Content="Microphone" HorizontalAlignment="Center" Margin="0,0,0,10" Grid.Column="0" Grid.Row="0"/>
+                <Image Source="/assets/image/microphone.png" Width="50" Height="50" Grid.Column="0" Grid.Row="1"/>
+                <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" Margin="0,10">
+Microphone Level: <Run x:Name="run_microphoneLevel">100</Run>
+                </TextBlock>
+                <ComboBox x:Name="comboBox_microphones" Grid.Column="0" Grid.Row="3" SelectionChanged="comboBox_microphones_SelectionChanged"/>
+                <ProgressBar x:Name="progressBar_microphone" Grid.Column="0" Grid.Row="4" Margin="0,10" Height="15" Minimum="0" Maximum="100"/>
+            </Grid>
+            <Grid Margin="10,10,10,10" Grid.Column="2" Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Content="Application #1" HorizontalAlignment="Center" Margin="0,0,0,10" Grid.Column="0" Grid.Row="0"/>
+                <Image x:Name="image_sessionOne" Width="50" Height="50" Grid.Column="0" Grid.Row="1"/>
+                <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" Margin="0,10">
+Audio Volume: <Run x:Name="run_sessionOne">100</Run>
+                </TextBlock>
+                <ComboBox x:Name="comboBox_sessionOne" Grid.Column="0" Grid.Row="3" SelectionChanged="comboBox_sessionOne_SelectionChanged"/>
+                <ProgressBar x:Name="progressBar_sessionOne" Grid.Column="0" Grid.Row="4" Margin="0,10" Height="15" Minimum="0" Maximum="100"/>
+            </Grid>
+            <Grid Margin="10,10,10,10" Grid.Column="3" Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label Content="Application #2" HorizontalAlignment="Center" Margin="0,0,0,10" Grid.Column="0" Grid.Row="0"/>
+                <Image x:Name="image_sessionTwo" Width="50" Height="50" Grid.Column="0" Grid.Row="1"/>
+                <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" Margin="0,10">
+Audio Volume: <Run x:Name="run_sessionTwo">100</Run>
+                </TextBlock>
+                <ComboBox x:Name="comboBox_sessionTwo" Grid.Column="0" Grid.Row="3" SelectionChanged="comboBox_sessionTwo_SelectionChanged"/>
+                <ProgressBar x:Name="progressBar_sessionTwo" Grid.Column="0" Grid.Row="4" Margin="0,10" Height="15" Minimum="0" Maximum="100"/>
+            </Grid>
+        </UniformGrid>
+    </Grid>
+</Page>

@@ -8,88 +8,39 @@
         Title="Deej App" Width="750" Height="333" Closing="Window_Closing" Icon="/assets/image/deejApp.ico"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
         >
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <UniformGrid Columns="4"  Rows="1" Margin="10,10,10,10" Grid.Column="0" Grid.Row="0">
-            <Grid Margin="10,10,10,10" Grid.Column="0" Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Label Content="Master Audio" HorizontalAlignment="Center" Margin="0,0,0,10" Grid.Column="0" Grid.Row="0"/>
-                <Image Source="/assets/image/master_volume.png" Width="50" Height="50" Grid.Column="0" Grid.Row="1"/>
-                <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" Margin="0,10">
-                    Audio Volume: <Run x:Name="run_masterVolumeLevel">100</Run>
-                </TextBlock>
-                <ProgressBar x:Name="progressBar_MasterAudio" Grid.Column="0" Grid.Row="3" Height="15" Minimum="0" Maximum="100"/>
+    <DockPanel>
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid 
+                Grid.Row="0" Grid.Column="0" 
+                VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
+                Margin="0,0,0,10"
+                Background="white"
+                MouseLeftButtonDown="AudioLevelsGrid_MouseLeftButtonDown"
+            >
+                <Border BorderThickness="1" BorderBrush="Black" CornerRadius="10">
+                    <Label Content="Ses Seviyeleri" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
             </Grid>
-            <Grid Margin="10,10,10,10" Grid.Column="1" Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Label Content="Microphone" HorizontalAlignment="Center" Margin="0,0,0,10" Grid.Column="0" Grid.Row="0"/>
-                <Image Source="/assets/image/microphone.png" Width="50" Height="50" Grid.Column="0" Grid.Row="1"/>
-                <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" Margin="0,10">
-                    Microphone Level: <Run x:Name="run_microphoneLevel">100</Run>
-                </TextBlock>
-                <ComboBox x:Name="comboBox_microphones" Grid.Column="0" Grid.Row="3" SelectionChanged="comboBox_microphones_SelectionChanged"/>
-                <ProgressBar x:Name="progressBar_microphone" Grid.Column="0" Grid.Row="4" Margin="0,10" Height="15" Minimum="0" Maximum="100"/>
+            <Grid 
+                Grid.Row="1" Grid.Column="0" 
+                VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
+                Margin="0,10,0,0"
+                Background="white"
+                MouseLeftButtonDown="SettingsGrid_MouseLeftButtonDown"
+            >
+                <Border BorderThickness="1" BorderBrush="Black" CornerRadius="10">
+                    <Label Content="Ayarlar" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
             </Grid>
-            <Grid Margin="10,10,10,10" Grid.Column="2" Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Label Content="Application #1" HorizontalAlignment="Center" Margin="0,0,0,10" Grid.Column="0" Grid.Row="0"/>
-                <Image x:Name="image_sessionOne" Width="50" Height="50" Grid.Column="0" Grid.Row="1"/>
-                <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" Margin="0,10">
-                    Audio Volume: <Run x:Name="run_sessionOne">100</Run>
-                </TextBlock>
-                <ComboBox x:Name="comboBox_sessionOne" Grid.Column="0" Grid.Row="3" SelectionChanged="comboBox_sessionOne_SelectionChanged"/>
-                <ProgressBar x:Name="progressBar_sessionOne" Grid.Column="0" Grid.Row="4" Margin="0,10" Height="15" Minimum="0" Maximum="100"/>
-            </Grid>
-            <Grid Margin="10,10,10,10" Grid.Column="3" Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Label Content="Application #2" HorizontalAlignment="Center" Margin="0,0,0,10" Grid.Column="0" Grid.Row="0"/>
-                <Image x:Name="image_sessionTwo" Width="50" Height="50" Grid.Column="0" Grid.Row="1"/>
-                <TextBlock Grid.Column="0" Grid.Row="2" HorizontalAlignment="Center" Margin="0,10">
-                    Audio Volume: <Run x:Name="run_sessionTwo">100</Run>
-                </TextBlock>
-                <ComboBox x:Name="comboBox_sessionTwo" Grid.Column="0" Grid.Row="3" SelectionChanged="comboBox_sessionTwo_SelectionChanged"/>
-                <ProgressBar x:Name="progressBar_sessionTwo" Grid.Column="0" Grid.Row="4" Margin="0,10" Height="15" Minimum="0" Maximum="100"/>
-            </Grid>
-        </UniformGrid>
-    </Grid>
+        </Grid>
+        <Frame Name="MainFrame" NavigationUIVisibility="Hidden">
+        </Frame>
+    </DockPanel>
 </Window>

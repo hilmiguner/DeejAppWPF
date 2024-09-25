@@ -1,3 +1,4 @@
 {
-  "serialPort":  "none"
+  "serialPort": "none",
+  "runOnStartUp": "false"
 }

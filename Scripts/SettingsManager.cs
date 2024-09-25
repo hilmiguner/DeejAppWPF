@@ -13,6 +13,7 @@ namespace DeejAppWPF.Scripts
     class SettingsManager
     {
         public string serialPort;
+        public bool runOnStartUp;
         public SettingsManager() 
         {
             ReadSettingsFile();
@@ -29,6 +30,7 @@ namespace DeejAppWPF.Scripts
             JsonElement root = document.RootElement;
 
             serialPort = root.GetProperty("serialPort").GetString();
+            runOnStartUp = bool.Parse(root.GetProperty("runOnStartUp").GetString());
         }
 
         public void SetSettings(string key, string value)
@@ -41,6 +43,7 @@ namespace DeejAppWPF.Scripts
             File.WriteAllText("assets/settings.json", jsonObject.ToString());
 
             if (key == "serialPort") serialPort = value;
+            if (key == "runOnStartUp") runOnStartUp = bool.Parse(value);
         }
 
         public void AddToStartup()

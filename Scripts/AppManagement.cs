@@ -179,8 +179,8 @@ namespace DeejAppWPF.Scripts
 
         public void AudioSessionManager_OnSessionCreated(object sender, IAudioSessionControl session)
         {
-            mainWindow.InitializeSessions();
-            mainWindow.SetCurrentPreset("presetOne");
+            mainWindow.mainPage.InitializeSessions();
+            mainWindow.mainPage.SetCurrentPreset("presetOne");
         }
 
         private void AsyncSerialCommunicationChecker()
@@ -188,9 +188,9 @@ namespace DeejAppWPF.Scripts
             while (true)
             {
                 if (serialPort.IsOpen) {
-                    if (!mainWindow.IsControlsEnabled)
+                    if (!mainWindow.mainPage.IsControlsEnabled)
                     {
-                        mainWindow.ToggleControls();
+                        mainWindow.mainPage.ToggleControls();
                         System.Windows.Application.Current.Dispatcher.Invoke(() =>
                         {
                             loadingWindow.Hide();
@@ -199,9 +199,9 @@ namespace DeejAppWPF.Scripts
                 }
                 else
                 {
-                    if(mainWindow.IsControlsEnabled)
+                    if(mainWindow.mainPage.IsControlsEnabled)
                     {
-                        mainWindow.ToggleControls();
+                        mainWindow.mainPage.ToggleControls();
 
                         Task.Run(() => 
                         {
@@ -231,8 +231,8 @@ namespace DeejAppWPF.Scripts
                         bool didInitialized = InitializeSerialCommunication();
                         if (didInitialized)
                         {
-                            mainWindow.serialPort = serialPort;
-                            mainWindow.serialPort.DataReceived += mainWindow.DataReceivedHandler;
+                            mainWindow.mainPage.serialPort = serialPort;
+                            mainWindow.mainPage.serialPort.DataReceived += mainWindow.mainPage.DataReceivedHandler;
                         }
                     }
                 }
@@ -252,8 +252,8 @@ namespace DeejAppWPF.Scripts
                         {
                             System.Windows.Application.Current.Dispatcher.Invoke(() =>
                             {
-                                mainWindow.InitializeSessions();
-                                mainWindow.SetCurrentPreset("presetOne");
+                                mainWindow.mainPage.InitializeSessions();
+                                mainWindow.mainPage.SetCurrentPreset("presetOne");
                             });
                         }
                     }
@@ -278,8 +278,8 @@ namespace DeejAppWPF.Scripts
                         {
                             nAudioManager.InitializeDevices();
                             nAudioManager.audioDevice.AudioSessionManager.OnSessionCreated += AudioSessionManager_OnSessionCreated;
-                            mainWindow.InitializeSessions();
-                            mainWindow.SetCurrentPreset("presetOne");
+                            mainWindow.mainPage.InitializeSessions();
+                            mainWindow.mainPage.SetCurrentPreset("presetOne");
                         }
                     });
                 }
