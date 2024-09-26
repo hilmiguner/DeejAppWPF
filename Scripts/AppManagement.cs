@@ -191,6 +191,14 @@ namespace DeejAppWPF.Scripts
             while (true)
             {
                 if (serialPort.IsOpen) {
+                    try
+                    {
+                        serialPort.ReadLine();
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+
                     if (!mainWindow.mainPage.IsControlsEnabled)
                     {
                         mainWindow.mainPage.ToggleControls();
@@ -202,7 +210,7 @@ namespace DeejAppWPF.Scripts
                 }
                 else
                 {
-                    if(mainWindow.mainPage.IsControlsEnabled)
+                    if (mainWindow.mainPage.IsControlsEnabled)
                     {
                         mainWindow.mainPage.ToggleControls();
 
