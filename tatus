@@ -1,0 +1,56 @@
+[1mdiff --git a/DeejAppWPF.sln b/DeejAppWPF.sln[m
+[1mindex 3bf11c6..d203fa5 100644[m
+[1m--- a/DeejAppWPF.sln[m
+[1m+++ b/DeejAppWPF.sln[m
+[36m@@ -3,7 +3,7 @@[m [mMicrosoft Visual Studio Solution File, Format Version 12.00[m
+ # Visual Studio Version 17[m
+ VisualStudioVersion = 17.10.35004.147[m
+ MinimumVisualStudioVersion = 10.0.40219.1[m
+[31m-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeejAppWPF", "DeejAppWPF.csproj", "{2FD46E2B-14B8-47A2-B159-C77FB106628F}"[m
+[32m+[m[32mProject("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeejAppWPF", "DeejAppWPF.csproj", "{2FD46E2B-14B8-47A2-B159-C77FB106628F}"[m
+ EndProject[m
+ Global[m
+ 	GlobalSection(SolutionConfigurationPlatforms) = preSolution[m
+[1mdiff --git a/Scripts/AppManagement.cs b/Scripts/AppManagement.cs[m
+[1mindex 30a6ab7..ef8b719 100644[m
+[1m--- a/Scripts/AppManagement.cs[m
+[1m+++ b/Scripts/AppManagement.cs[m
+[36m@@ -11,6 +11,7 @@[m [musing System.Windows;[m
+ using System.Drawing;[m
+ using System.Windows.Forms;[m
+ using System.Management;[m
+[32m+[m[32musing System.IO;[m
+ [m
+ namespace DeejAppWPF.Scripts[m
+ {[m
+[36m@@ -25,6 +26,8 @@[m [mnamespace DeejAppWPF.Scripts[m
+         private LoadingWindow loadingWindow;[m
+         public AppManagement() [m
+         {[m
+[32m+[m[32m            Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);[m
+[32m+[m
+             InitializeNotifyIcon();[m
+ [m
+             loadingWindow = new LoadingWindow();[m
+[36m@@ -40,7 +43,7 @@[m [mnamespace DeejAppWPF.Scripts[m
+                 settingsManager = new SettingsManager();[m
+ [m
+                 bool isSerialPortInitialized = InitializeSerialCommunication();[m
+[31m-                [m
+[32m+[m
+                 System.Windows.Application.Current.Dispatcher.Invoke(() => mainWindow = new MainWindow(nAudioManager, serialPort));[m
+                 [m
+                 if (isSerialPortInitialized)[m
+[1mdiff --git a/Scripts/SettingsManager.cs b/Scripts/SettingsManager.cs[m
+[1mindex 1ee4299..ad5e740 100644[m
+[1m--- a/Scripts/SettingsManager.cs[m
+[1m+++ b/Scripts/SettingsManager.cs[m
+[36m@@ -49,7 +49,7 @@[m [mnamespace DeejAppWPF.Scripts[m
+ [m
+         public void AddToStartup()[m
+         {[m
+[31m-            string applicationPath = Process.GetCurrentProcess().MainModule.FileName;[m
+[32m+[m[32m            string applicationPath = '"' + Process.GetCurrentProcess().MainModule.FileName + '"';[m
+ [m
+             RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);[m
+ [m

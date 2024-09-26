@@ -11,6 +11,7 @@ using System.Windows;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Management;
+using System.IO;
 
 namespace DeejAppWPF.Scripts
 {
@@ -25,6 +26,8 @@ namespace DeejAppWPF.Scripts
         private LoadingWindow loadingWindow;
         public AppManagement() 
         {
+            Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
+
             InitializeNotifyIcon();
 
             loadingWindow = new LoadingWindow();
@@ -40,7 +43,7 @@ namespace DeejAppWPF.Scripts
                 settingsManager = new SettingsManager();
 
                 bool isSerialPortInitialized = InitializeSerialCommunication();
-                
+
                 System.Windows.Application.Current.Dispatcher.Invoke(() => mainWindow = new MainWindow(nAudioManager, serialPort));
                 
                 if (isSerialPortInitialized)

@@ -49,7 +49,7 @@ namespace DeejAppWPF.Scripts
 
         public void AddToStartup()
         {
-            string applicationPath = Process.GetCurrentProcess().MainModule.FileName;
+            string applicationPath = '"' + Process.GetCurrentProcess().MainModule.FileName + '"';
 
             RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
