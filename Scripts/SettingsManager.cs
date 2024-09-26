@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json.Linq;
 using Microsoft.Win32;
+using System.Diagnostics;
 
 namespace DeejAppWPF.Scripts
 {
@@ -48,19 +49,15 @@ namespace DeejAppWPF.Scripts
 
         public void AddToStartup()
         {
-            // Uygulamanızın yolu
-            string applicationPath = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            string applicationPath = Process.GetCurrentProcess().MainModule.FileName;
 
-            // Kayıt Defteri'ne erişim
             RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
-            // Anahtar yoksa oluşturun
             if (registryKey == null)
             {
                 registryKey = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run");
             }
 
-            // Uygulamayı ekleyin
             registryKey.SetValue("DeejApp", applicationPath);
         }
 
@@ -68,7 +65,6 @@ namespace DeejAppWPF.Scripts
         {
             RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
 
-            // Eğer anahtar varsa sil
             if (registryKey != null)
             {
                 registryKey.DeleteValue("DeejApp", false);
