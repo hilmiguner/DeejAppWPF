@@ -12,6 +12,8 @@
     <None Remove="assets\image\deejApp.ico" />
     <None Remove="assets\image\master_volume.png" />
     <None Remove="assets\image\microphone.png" />
+    <None Remove="assets\image\unknown.ico" />
+    <None Remove="assets\image\unknown.png" />
     <None Remove="presets.json" />
   </ItemGroup>
 
@@ -26,6 +28,9 @@
     <Resource Include="assets\image\deejApp.ico" />
     <Resource Include="assets\image\master_volume.png" />
     <Resource Include="assets\image\microphone.png" />
+    <Resource Include="assets\image\unknown.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

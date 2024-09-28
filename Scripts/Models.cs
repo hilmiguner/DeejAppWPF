@@ -11,7 +11,6 @@ namespace DeejAppWPF.Scripts
 {
     public class SessionItem
     {
-        public uint processID { get; set; }
         public string name { get; set; }
         public AudioSessionControl controller { get; set; }
         public Icon icon { get; set; }

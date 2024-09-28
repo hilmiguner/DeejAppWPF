@@ -32,9 +32,13 @@ namespace DeejAppWPF
         private NAudioManagement nAudioManager;
         public SerialPort serialPort;
         public bool IsControlsEnabled = true;
+        private NotificationClient notificationClient;
+        public Dictionary<String, List<SessionItem>> currentSessions;
         public MainPage(NAudioManagement nAudioManager, SerialPort serialPort)
         {
             this.nAudioManager = nAudioManager;
+            notificationClient = new NotificationClient(nAudioManager, this);
+            nAudioManager.deviceEnumerator.RegisterEndpointNotificationCallback(notificationClient);
             this.serialPort = serialPort;
             serialPort.DataReceived += DataReceivedHandler;
             presetManager = new PresetManager();
@@ -63,13 +67,12 @@ namespace DeejAppWPF
             {
                 this.Dispatcher.Invoke(() => image.Source = null);
             }
-            nAudioManager.FetchSessions();
+            currentSessions = nAudioManager.GetSessions();
             foreach (System.Windows.Controls.ComboBox comboBox in comboBoxes)
             {
-                Dictionary<String, List<SessionItem>> sessionList = nAudioManager.GetSessions();
                 this.Dispatcher.Invoke(() =>
                 {
-                    comboBox.ItemsSource = sessionList;
+                    comboBox.ItemsSource = currentSessions;
                     comboBox.DisplayMemberPath = "Key";
                 });
             }
@@ -169,10 +172,6 @@ namespace DeejAppWPF
 
         private void UpdateMasterLevel(float newValue)
         {
-            //DEBUG START
-            //Debug.Print((nAudioManager.audioDevice.AudioEndpointVolume == null).ToString());
-            //DEBUG END
-
             // Mute check BEGIN
             if (newValue == 0.0d)
             {

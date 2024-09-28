@@ -18,13 +18,10 @@ namespace DeejAppWPF.Scripts
 
         public KeyValuePair<String, List<SessionItem>>[] currentSessions = new KeyValuePair<String, List<SessionItem>>[2];
 
-        public Dictionary<String, List<SessionItem>> allSessions;
         public List<MicrophoneItem> allMicrophones;
         public NAudioManagement()
         {
             InitializeDevices();
-
-            allSessions = GetSessions();
             allMicrophones = GetAllMicrophones();
         }
 
@@ -33,36 +30,47 @@ namespace DeejAppWPF.Scripts
             Dictionary<String, List<SessionItem>> sessionDict = new Dictionary<String, List<SessionItem>>();
 
             audioDevice.AudioSessionManager.RefreshSessions();
+
             SessionCollection allSessions = audioDevice.AudioSessionManager.Sessions;
+            
             for (int i = 0; i < allSessions.Count; i++)
             {
                 AudioSessionControl sessionController = allSessions[i];
-                var process = Process.GetProcessById((int)sessionController.GetProcessID);
+                Process process = Process.GetProcessById((int)sessionController.GetProcessID);
                 Icon? icon = null;
                 string? name = null;
-                uint processID = 0;
                 if (sessionController.GetProcessID != 0)
                 {
                     try
                     {
-                        name = process.ProcessName;
-                        processID = sessionController.GetProcessID;
+                        name = process.MainModule.FileVersionInfo.ProductName;
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                    finally
+                    {
+                        if (name == null || name == "") name = process.ProcessName;
+                    }
+
+                    try
+                    {
                         icon = Icon.ExtractAssociatedIcon(filePath: process.MainModule.FileName);
                     }
                     catch (Exception ex)
                     {
-
                     }
+                    finally
+                    {
+                        if (icon == null) icon = new Icon(System.Windows.Application.GetResourceStream(new Uri("pack://application:,,,/DeejAppWPF;component/assets/image/unknown.ico")).Stream);
+                    }
+
                     if (!sessionDict.ContainsKey(name)) sessionDict[name] = new List<SessionItem>();
-                    sessionDict[name].Add(new SessionItem { processID = processID, controller = sessionController, icon = icon, name = name });
+                    
+                    sessionDict[name].Add(new SessionItem { controller = sessionController, icon = icon, name = name });
                 }
             }
             return sessionDict;
-        }
-
-        public void FetchSessions()
-        {
-            allSessions = GetSessions();
         }
 
         public List<MicrophoneItem> GetAllMicrophones()
@@ -89,6 +97,10 @@ namespace DeejAppWPF.Scripts
             audioDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
             recordingDevice = deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Multimedia);
         }
- 
+
+        public void SetRenderDeviceByID(string deviceID)
+        {
+            audioDevice = deviceEnumerator.GetDevice(deviceID);
+        }
     }
 }

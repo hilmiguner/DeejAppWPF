@@ -34,8 +34,6 @@ namespace DeejAppWPF.Scripts
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     nAudioManager = new NAudioManagement();
-                    nAudioManager.audioDevice.AudioSessionManager.OnSessionCreated += AudioSessionManager_OnSessionCreated;
-                    Task.Run(AsyncDefaultAudioDeviceChecker);
                 });
 
                 settingsManager = new SettingsManager();
@@ -52,7 +50,7 @@ namespace DeejAppWPF.Scripts
 
                 System.Windows.Application.Current.Dispatcher.Invoke(() => {
                     loadingWindow.Hide();
-                    Task.Run(AsyncSessionStateChecker);
+                    Task.Run(AsyncSessionInitializer);
                 });
             });
             loadingWindow.ShowDialog();
@@ -178,10 +176,55 @@ namespace DeejAppWPF.Scripts
             return isInitialized;
         }
 
-        public void AudioSessionManager_OnSessionCreated(object sender, IAudioSessionControl session)
+        private void AsyncSessionInitializer()
         {
-            mainWindow.mainPage.InitializeSessions();
-            mainWindow.mainPage.SetCurrentPreset("presetOne");
+            while (true)
+            {
+                bool willChange = false;
+
+                Dictionary<String, List<SessionItem>> sessions = nAudioManager.GetSessions();
+
+                foreach (KeyValuePair<String, List<SessionItem>> kvp in sessions)
+                {
+                    if(mainWindow.mainPage.currentSessions.ContainsKey(kvp.Key))
+                    {
+                        foreach (SessionItem item in kvp.Value)
+                        {
+                            bool identifierFound = false;
+                            foreach (SessionItem currentItem in mainWindow.mainPage.currentSessions[kvp.Key])
+                            {
+                                if(item.controller.GetSessionInstanceIdentifier == currentItem.controller.GetSessionInstanceIdentifier)
+                                {
+                                    identifierFound = true;
+                                    break;
+                                }
+                            }
+                            if(!identifierFound)
+                            {
+                                willChange = true;
+                                break;
+                            }
+                        }
+                    }
+                    else willChange = true;
+                }
+
+                foreach (string key in mainWindow.mainPage.currentSessions.Keys)
+                {
+                    if (!sessions.ContainsKey(key))
+                    {
+                        willChange = true;
+                        break;
+                    }
+                }
+
+                if (willChange)
+                {
+                    mainWindow.mainPage.InitializeSessions();
+                    mainWindow.mainPage.SetCurrentPreset("presetOne");
+                }
+                Thread.Sleep(2000);
+            }
         }
 
         private void AsyncSerialCommunicationChecker()
@@ -246,57 +289,6 @@ namespace DeejAppWPF.Scripts
                     }
                 }
                 Thread.Sleep(2000);
-            }
-        }
-    
-        private void AsyncSessionStateChecker()
-        {
-            while (true)
-            {
-                foreach (var sessionDictionary in nAudioManager.allSessions)
-                {
-                    foreach (var session in sessionDictionary.Value)
-                    {
-                        if (session.controller.State == AudioSessionState.AudioSessionStateExpired)
-                        {
-                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                mainWindow.mainPage.InitializeSessions();
-                                mainWindow.mainPage.SetCurrentPreset("presetOne");
-                            });
-                        }
-                    }
-                }
-                Thread.Sleep(2000);
-            }
-        }
-
-        private void AsyncDefaultAudioDeviceChecker()
-        {
-            MMDevice tempDevice;
-            MMDevice currentDevice;
-            while (true)
-            {
-                try
-                {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        tempDevice = nAudioManager.deviceEnumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
-                        currentDevice = nAudioManager.audioDevice;
-                        if (currentDevice.DeviceFriendlyName != tempDevice.DeviceFriendlyName)
-                        {
-                            nAudioManager.InitializeDevices();
-                            nAudioManager.audioDevice.AudioSessionManager.OnSessionCreated += AudioSessionManager_OnSessionCreated;
-                            mainWindow.mainPage.InitializeSessions();
-                            mainWindow.mainPage.SetCurrentPreset("presetOne");
-                        }
-                    });
-                }
-                catch (Exception e) { }
-                finally
-                {
-                    Thread.Sleep(2000);
-                }
             }
         }
     }
