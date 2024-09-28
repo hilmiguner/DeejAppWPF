@@ -26,8 +26,6 @@ namespace DeejAppWPF.Scripts
         private LoadingWindow loadingWindow;
         public AppManagement() 
         {
-            Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
-
             InitializeNotifyIcon();
 
             loadingWindow = new LoadingWindow();

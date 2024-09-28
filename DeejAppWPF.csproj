@@ -37,6 +37,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="assets\crashes\" />
+  </ItemGroup>
+
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

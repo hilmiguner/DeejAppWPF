@@ -135,18 +135,18 @@ namespace DeejAppWPF
         }
         public void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
-            string data = serialPort.ReadLine();
-            string[] dataList = data.Split("|");
-            float[] pins = new float[4];
             try
             {
+                string data = serialPort.ReadLine();
+                string[] dataList = data.Split("|");
+                float[] pins = new float[4];
                 pins[0] = HelperFunctions.Normalize(float.Parse(dataList[1]));
                 pins[1] = HelperFunctions.Normalize(float.Parse(dataList[2]));
                 pins[2] = HelperFunctions.Normalize(float.Parse(dataList[3]));
                 pins[3] = HelperFunctions.Normalize(float.Parse(dataList[4]));
+                UpdateValues(pins);
             }
             catch { }
-            UpdateValues(pins);
         }
 
         public void UpdateValues(float[] pins)
